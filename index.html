@@ -211,6 +211,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
         }
 
         .top-nav-logo {
@@ -239,6 +240,9 @@
             display: flex;
             align-items: center;
             gap: 4px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .top-nav-links a {
@@ -3594,13 +3598,16 @@
     <section class="hero">
         <h1>L'agence qui rend<br>vos ads <span class="gradient-text">KULT</span></h1>
         <p class="hero-sub">On scale vos Meta Ads avec des créatives qui convertissent.<br>Notre promesse : si vous ne gagnez pas, nous non plus.</p>
-        
+        <p class="hero-promise" style="font-size: 0.9rem; color: var(--orange-light); font-weight: 600; margin-top: -30px; margin-bottom: 30px;">Premiers résultats sous 48h</p>
+
         <!-- Social Proof -->
         <div class="hero-social-proof">
             <span class="social-proof-stars">⭐⭐⭐⭐⭐</span>
             <span class="social-proof-text">4.9/5 • <strong>+280K€</strong> générés pour nos clients</span>
         </div>
-        
+
+        <p style="font-size: 0.8rem; color: var(--red); font-weight: 700; margin-bottom: 12px; letter-spacing: 0.02em;">🔥 Plus que 3 places disponibles cette semaine</p>
+
         <div class="booking-widget" id="booking">
             <div class="booking-card">
                 <div class="booking-avatars">
@@ -3611,7 +3618,7 @@
                     <span class="booking-names">Mathys & Jules</span>
                     <span class="booking-roles">Fondateurs</span>
                 </div>
-                <a href="booking.html" target="_blank" class="booking-btn">Découvrir mon potentiel →</a>
+                <a href="booking.html" target="_blank" class="booking-btn">Réserver mon audit gratuit →</a>
             </div>
             <div class="hero-cta-badge">
                 <span class="cta-badge-text">
@@ -3623,7 +3630,7 @@
 
     <!-- Marquee -->
     <div class="marquee-section">
-        <div class="marquee-label">Ils nous font confiance</div>
+        <div class="marquee-label">Rejoignez 25+ marques qui nous font confiance</div>
         <div class="marquee">
             <div class="marquee-content">
                 <span class="marquee-brand">Eve and co</span>
@@ -3657,11 +3664,11 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="statRoas">0</div>
-                <div class="stat-label">ROAS moyen</div>
+                <div class="stat-label">ROAS moyen (vs 1.8 industrie)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">+<span id="statBrands">0</span></div>
-                <div class="stat-label">Marques accompagnées</div>
+                <div class="stat-label">Marques actives</div>
             </div>
         </div>
     </div>
@@ -3696,6 +3703,7 @@
                 <p>Entre produit, logistique et SAV, les ads passent toujours au second plan.</p>
             </div>
         </div>
+        <p style="text-align: center; margin-top: 40px; color: var(--orange-light); font-weight: 600; font-size: 1rem;">Découvrez comment on résout ça ↓</p>
     </section>
 
     <!-- Arsenal Section -->
@@ -3776,7 +3784,7 @@
             
             <div class="single-offer-cta-box">
                 <div class="cta-box-header">
-                    <span class="cta-box-badge">Audit gratuit</span>
+                    <span class="cta-box-badge">Audit gratuit · Places limitées</span>
                     <h3>Commençons par un échange</h3>
                     <p>30 minutes pour analyser votre situation et définir si on peut vous aider à scaler.</p>
                 </div>
@@ -3797,16 +3805,17 @@
                 </div>
                 
                 <a href="booking.html" target="_blank" class="single-offer-cta">
-                    Je prends rendez-vous !
+                    Réserver mon audit gratuit
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                 </a>
-                
+
                 <div class="cta-box-reassurance">
                     <span>&check; Sans engagement</span>
                     <span>&check; 100% gratuit</span>
                     <span>&check; 0 r&eacute;sultat = 0&euro;</span>
+                    <span>&check; Réponse sous 24h</span>
                 </div>
             </div>
         </div>
@@ -3818,6 +3827,7 @@
             <div class="section-tag">Nos outils IA</div>
             <h2 class="section-title">Testez notre technologie</h2>
             <p class="section-desc">On a développé nos propres outils d'analyse IA. Le même moteur qu'on utilise pour optimiser les campagnes de nos clients — accessible gratuitement.</p>
+            <p style="font-size: 0.85rem; font-weight: 600; color: var(--orange); margin-top: -10px;">+2 000 analyses réalisées</p>
         </div>
 
         <div class="tools-grid">
@@ -4004,7 +4014,7 @@
             <div class="result-card">
                 <div class="result-header">
                     <span class="result-brand">Eve and co</span>
-                    <span class="result-formula">Formule Performance</span>
+                    <span class="result-formula">Formule Performance · En 90 jours</span>
                 </div>
                 <div class="result-stats">
                     <div class="result-stat">
@@ -4033,7 +4043,7 @@
             <div class="result-card">
                 <div class="result-header">
                     <span class="result-brand">Soolie</span>
-                    <span class="result-formula">Formule Starter</span>
+                    <span class="result-formula">Formule Starter · En 60 jours</span>
                 </div>
                 <div class="result-stats">
                     <div class="result-stat">
@@ -4129,7 +4139,7 @@
                 <div class="timeline-number">1</div>
                 <div class="timeline-content">
                     <h3>Appel découverte</h3>
-                    <p>On échange 30 min pour comprendre vos objectifs</p>
+                    <p>Jour 1 · On échange 30 min pour comprendre vos objectifs</p>
                 </div>
             </div>
             <div class="timeline-line"></div>
@@ -4137,7 +4147,7 @@
                 <div class="timeline-number">2</div>
                 <div class="timeline-content">
                     <h3>On crée vos ads</h3>
-                    <p>Création vos créatives optimisées</p>
+                    <p>Jours 2-7 · Création de vos créatives optimisées</p>
                 </div>
             </div>
             <div class="timeline-line"></div>
@@ -4145,7 +4155,7 @@
                 <div class="timeline-number">3</div>
                 <div class="timeline-content">
                     <h3>Vous scalez</h3>
-                    <p>Vos campagnes tournent, vous récoltez les résultats</p>
+                    <p>À partir du jour 8 · Vos campagnes tournent, vous récoltez les résultats</p>
                 </div>
             </div>
         </div>
@@ -4214,13 +4224,25 @@
                     </div>
                 </div>
             </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    <span>Quel budget minimum faut-il pour commencer ?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        On s'adapte à tous les budgets. Nos clients investissent généralement à partir de 500€/mois en spend ads. L'important, c'est d'avoir un produit validé et une ambition de croissance. On définit ensemble le budget optimal lors de l'audit gratuit.
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- CTA Final -->
     <section class="cta-section">
         <div class="cta-box">
-            <h2>Prêt à scaler vos Meta Ads ?</h2>
+            <p style="font-size: 0.85rem; color: var(--red); font-weight: 700; margin-bottom: 12px;">🔥 Plus que 3 audits gratuits cette semaine</p>
+            <h2>Votre prochain client est à un appel</h2>
             <p>30 minutes pour analyser votre situation et découvrir combien vous pouvez générer.</p>
             
             <div class="booking-widget">
@@ -4233,7 +4255,7 @@
                         <span class="booking-names">Mathys & Jules</span>
                         <span class="booking-roles">Fondateurs</span>
                     </div>
-                    <a href="booking.html" target="_blank" class="booking-btn">Réserver un créneau →</a>
+                    <a href="booking.html" target="_blank" class="booking-btn">Réserver maintenant - C'est gratuit →</a>
                 </div>
             </div>
             <div class="cta-box-guarantee">
@@ -4246,9 +4268,9 @@
     <!-- Sticky Mobile CTA -->
     <div class="sticky-mobile-cta">
         <a href="booking.html" target="_blank" onclick="trackBookingClick()">
-            Prendre rendez-vous gratuitement →
+            Audit gratuit →
         </a>
-        <span class="sticky-guarantee">✓ Sans engagement · 0 résultat = 0€</span>
+        <span class="sticky-guarantee">🔥 3 places restantes · Sans engagement</span>
     </div>
 
     <!-- Footer -->
