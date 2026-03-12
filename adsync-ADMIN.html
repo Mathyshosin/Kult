@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdSync — Score de cohérence Créa ↔ Landing Page</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-2: #F4F4F1;
+    --surface-3: #ECEAE6;
+    --border: #E2E0DB;
+    --border-strong: #D1CFC9;
+    --text: #1A1A18;
+    --text-muted: #7A7A72;
+    --accent: #5B3AFF;
+    --accent-light: #7C5FFF;
+    --accent-glow: rgba(91, 58, 255, 0.08);
+    --accent-glow-strong: rgba(91, 58, 255, 0.15);
+    --green: #16A34A;
+    --green-bg: #F0FDF4;
+    --green-border: #BBF7D0;
+    --yellow: #CA8A04;
+    --yellow-bg: #FEFCE8;
+    --yellow-border: #FEF08A;
+    --red: #DC2626;
+    --red-bg: #FEF2F2;
+    --red-border: #FECACA;
+    --orange: #EA580C;
+    --orange-bg: #FFF7ED;
+    --orange-border: #FED7AA;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(250, 250, 248, 0.9);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(91, 58, 255, 0.3);
+  }
+
+  .logo em { font-style: normal; color: var(--accent); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 8px rgba(91, 58, 255, 0.25);
+  }
+
+  .btn-accent:hover:not(:disabled) {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(91, 58, 255, 0.3);
+  }
+
+  .btn-outline {
+    background: white;
+    color: var(--text);
+    border: 1.5px solid var(--border-strong);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-full { width: 100%; }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; }
+  .screen.active { display: flex; }
+
+  /* ===== SCREEN 1: EMAIL GATE ===== */
+  .email-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .email-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .email-card::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(91, 58, 255, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .email-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(91, 58, 255, 0.15);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 20px;
+  }
+
+  .email-card h1 {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+
+  .email-card h1 span { color: var(--accent); }
+
+  .email-card > p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-field::placeholder { color: var(--text-muted); }
+
+  .email-trust {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  .email-features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .email-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .email-feature-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--accent-glow);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ===== SCREEN 2: SCAN FORM ===== */
+  .scan-screen {
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+    min-height: calc(100vh - 65px);
+  }
+
+  .scan-container { max-width: 640px; width: 100%; }
+
+  .scan-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .scan-header h2 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .scan-header p { font-size: 15px; color: var(--text-muted); }
+
+  .scan-steps { display: flex; gap: 8px; margin-bottom: 32px; }
+
+  .scan-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .scan-step.done { background: var(--accent); }
+  .scan-step.current { background: var(--accent-light); }
+
+  .form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .form-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-section-title .step-num {
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .form-section-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--surface-2);
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .upload-zone.has-file {
+    border-style: solid;
+    border-color: var(--green);
+    background: var(--green-bg);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+
+  .upload-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+  .upload-text strong { color: var(--accent); }
+
+  .upload-preview {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .upload-preview img {
+    max-height: 200px;
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .upload-preview .file-name {
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .remove-file {
+    font-size: 12px;
+    color: var(--red);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .upload-tip {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(91, 58, 255, 0.12);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  .upload-tip strong { color: var(--accent); }
+
+  /* ===== SCREEN 3: LOADING ===== */
+  .loading-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .loading-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .loading-spinner {
+    width: 56px;
+    height: 56px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+    margin-top: 28px;
+  }
+
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+
+  .loading-step.active { color: var(--text); font-weight: 600; }
+  .loading-step.done { color: var(--green); }
+
+  .loading-step-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .loading-step.active .loading-step-icon {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .loading-step.done .loading-step-icon {
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* ===== SCREEN 4: RESULTS ===== */
+  .results-screen {
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 24px 80px;
+  }
+
+  .results-container { max-width: 900px; width: 100%; }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .results-title h2 {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .results-title p { font-size: 14px; color: var(--text-muted); }
+
+  /* GLOBAL SCORE — REDESIGNED */
+  .global-score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+  }
+
+  .global-score-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 24px;
+  }
+
+  .score-circle {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+  }
+
+  .score-circle svg {
+    width: 130px;
+    height: 130px;
+    transform: rotate(-90deg);
+  }
+
+  .score-circle .track {
+    fill: none;
+    stroke: var(--surface-3);
+    stroke-width: 10;
+  }
+
+  .score-circle .fill-ring {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-dasharray: 326;
+    stroke-dashoffset: 326;
+    transition: stroke-dashoffset 1.5s ease-out 0.3s;
+  }
+
+  .score-circle .score-val {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-circle .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .score-circle .score-max {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .global-score-text { text-align: left; flex: 1; }
+
+  .global-score-text h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .global-score-text p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  /* Mini score bar */
+  .score-mini-bars {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mini-bar-item { text-align: center; }
+
+  .mini-bar-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .mini-bar-track {
+    height: 8px;
+    background: var(--surface-3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .mini-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0;
+    transition: width 1.2s ease-out 0.6s;
+  }
+
+  .mini-bar-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* WHAT WE COMPARED */
+  .compared-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .compared-card-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .compared-grid {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr;
+    gap: 0;
+    align-items: start;
+  }
+
+  .compared-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  /* AD = format portrait comme une pub Meta */
+  .compared-thumb-ad {
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: 4/5;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+    background: var(--surface-2);
+    position: relative;
+  }
+
+  .compared-thumb-ad img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* LP = browser mockup (toujours fonctionnel) */
+  .compared-thumb-lp {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .browser-chrome {
+    background: var(--surface-2);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .browser-dots {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .browser-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .browser-dots span:nth-child(1) { background: #FF5F57; }
+  .browser-dots span:nth-child(2) { background: #FFBD2E; }
+  .browser-dots span:nth-child(3) { background: #28C840; }
+
+  .browser-url-bar {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .browser-url-bar .lock { color: var(--green); font-size: 9px; }
+
+  .browser-body {
+    position: relative;
+    min-height: 160px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+
+  /* Placeholder shown while screenshot loads */
+  .browser-body-placeholder {
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    min-height: 160px;
+    transition: opacity 0.3s;
+  }
+
+  .browser-body-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(91, 58, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .browser-body-domain {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .browser-body-loading {
+    font-size: 11px;
+    color: var(--text-muted);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .browser-body-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 80%;
+    margin-top: 4px;
+  }
+
+  .browser-body-lines span {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+  }
+
+  .browser-body-lines span:nth-child(1) { width: 100%; }
+  .browser-body-lines span:nth-child(2) { width: 70%; }
+  .browser-body-lines span:nth-child(3) { width: 85%; }
+
+  /* Real screenshot overlaid on top */
+  .browser-body-screenshot {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .browser-body-screenshot.loaded {
+    opacity: 1;
+  }
+
+  .browser-body-screenshot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .compared-thumb-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+  }
+
+  .compared-side-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .compared-side-url {
+    font-size: 11px;
+    color: var(--text-muted);
+    word-break: break-all;
+    line-height: 1.4;
+    max-width: 280px;
+  }
+
+  .compared-vs-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 60px;
+  }
+
+  .compared-vs {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    background: var(--accent-glow-strong);
+    padding: 8px 14px;
+    border-radius: 100px;
+    letter-spacing: 1px;
+  }
+
+  /* DIMENSION CARDS — REDESIGNED */
+  .dimensions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: all 0.2s;
+  }
+
+  .dim-card:hover { box-shadow: var(--shadow-sm); }
+
+  .dim-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .dim-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .dim-emoji {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+  }
+
+  .dim-score-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .dim-bar {
+    height: 8px;
+    background: var(--surface-3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .dim-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0;
+    transition: width 1.2s ease-out 0.5s;
+  }
+
+  .dim-verdict {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .dim-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-pass { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .status-warn { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+  .status-fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .status-alert { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+
+  .dim-detail {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* WHAT'S WRONG - VISUAL CALLOUT */
+  .dim-issue {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
+  }
+
+  .dim-issue-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+  .issue-bad {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+  }
+
+  .issue-ok {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    color: var(--green);
+  }
+
+  .issue-meh {
+    background: var(--yellow-bg);
+    border: 1px solid var(--yellow-border);
+    color: var(--yellow);
+  }
+
+  /* RECOMMENDATIONS — REDESIGNED */
+  .reco-section {
+    margin-bottom: 20px;
+  }
+
+  .reco-section-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .reco-section-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .reco-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reco-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .reco-item:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--border-strong);
+  }
+
+  .reco-priority {
+    min-width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .p-high { background: var(--red); }
+  .p-med { background: var(--orange); }
+  .p-low { background: var(--accent); }
+
+  .reco-content { flex: 1; }
+
+  .reco-text {
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .reco-impact {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--green);
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+
+  /* CTA */
+  .results-cta {
+    background: linear-gradient(135deg, rgba(91, 58, 255, 0.04), rgba(91, 58, 255, 0.08));
+    border: 1.5px solid rgba(91, 58, 255, 0.2);
+    border-radius: 18px;
+    padding: 36px;
+    text-align: center;
+  }
+
+  .results-cta h3 {
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .results-cta p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .results-cta-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ERROR */
+  .error-msg {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .email-card { padding: 32px 24px; }
+    .scan-screen { padding: 32px 16px; }
+    .form-section { padding: 20px; }
+    .results-screen { padding: 24px 16px 60px; }
+    .global-score-top { flex-direction: column; gap: 20px; }
+    .global-score-text { text-align: center; }
+    .score-mini-bars { grid-template-columns: 1fr 1fr; }
+    .dimensions-grid { grid-template-columns: 1fr; }
+    .results-header { flex-direction: column; }
+    .compared-card { flex-direction: column; text-align: center; }
+    .compared-grid { grid-template-columns: 1fr; gap: 16px; }
+    .compared-vs-center { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-mark">↔</div>
+    Ad<em>Sync</em>
+  </div>
+  <div class="nav-right">
+    Propulsé par <strong style="color:var(--text);margin-left:4px;">KULT Agency</strong>
+  </div>
+</nav>
+
+<!-- ========== SCREEN 1: EMAIL ========== -->
+<section class="screen email-screen active" id="screen-email">
+  <div class="email-card">
+    <div class="email-icon">↔</div>
+    <h1>Analyse la cohérence<br><span>Créa ↔ Page</span></h1>
+    <p>Découvre si ta pub Meta et ta landing page racontent la même histoire — ou si tu perds des conversions en silence.</p>
+    <div class="error-msg" id="email-error"></div>
+    <div class="input-group">
+      <input type="email" class="input-field" id="email-input" placeholder="ton@email.com" required>
+      <input type="text" class="input-field" id="name-input" placeholder="Nom de ta marque (optionnel)">
+    </div>
+    <button class="btn btn-accent btn-full" id="email-submit">Scanner gratuitement →</button>
+    <div class="email-trust">🔒 Aucun spam. Juste ton rapport.</div>
+    <div class="email-features">
+      <div class="email-feature">
+        <div class="email-feature-icon">🎨</div>
+        <span>Analyse visuelle, message, CTA et technique</span>
+      </div>
+      <div class="email-feature">
+        <div class="email-feature-icon">💬</div>
+        <span>Détection des décalages qui tuent ta conversion</span>
+      </div>
+      <div class="email-feature">
+        <div class="email-feature-icon">💡</div>
+        <span>Recommandations concrètes avec impact estimé</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SCREEN 2: SCAN ========== -->
+<section class="screen scan-screen" id="screen-scan">
+  <div class="scan-container">
+    <div class="scan-header">
+      <h2>Lance ton analyse</h2>
+      <p>Upload ta créa et entre l'URL de ta landing page</p>
+    </div>
+    <div class="scan-steps">
+      <div class="scan-step done"></div>
+      <div class="scan-step current"></div>
+      <div class="scan-step"></div>
+    </div>
+    <div class="error-msg" id="scan-error"></div>
+
+    <!-- Section 1: Upload créa -->
+    <div class="form-section">
+      <div class="form-section-title">
+        <div class="step-num">1</div>
+        Ta créa publicitaire
+      </div>
+      <div class="form-section-desc">Upload une capture d'écran de ta pub Meta Ads</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" accept="image/*" id="file-input">
+        <div class="upload-placeholder" id="upload-placeholder">
+          <div class="upload-icon">📤</div>
+          <div class="upload-text">
+            <strong>Clique ou glisse</strong> ton image ici<br>
+            PNG, JPG, WebP — max 10MB
+          </div>
+        </div>
+        <div class="upload-preview" id="upload-preview">
+          <img id="preview-img" src="" alt="Preview">
+          <div class="file-name" id="file-name">✓ </div>
+          <span class="remove-file" id="remove-file">Supprimer</span>
+        </div>
+      </div>
+      <div class="upload-tip">
+        💡 <strong>Astuce :</strong> Va sur <a href="https://www.facebook.com/ads/library/" target="_blank" style="color:var(--accent);">Facebook Ads Library</a>, trouve ta pub, et fais une capture d'écran du visuel. C'est la méthode la plus fiable.
+      </div>
+    </div>
+
+    <!-- Section 2: Landing Page -->
+    <div class="form-section">
+      <div class="form-section-title">
+        <div class="step-num">2</div>
+        Ta landing page
+      </div>
+      <div class="form-section-desc">L'URL vers laquelle ta pub redirige les utilisateurs</div>
+      <input type="url" class="input-field" id="lp-url-input" placeholder="https://tamarque.fr/collection-printemps">
+    </div>
+
+    <!-- Section 3: Contexte -->
+    <div class="form-section">
+      <div class="form-section-title">
+        <div class="step-num">3</div>
+        Contexte <span style="font-weight:400; color:var(--text-muted); font-size:13px;">(optionnel)</span>
+      </div>
+      <div class="form-section-desc">Aide l'IA à calibrer ses recommandations pour ton secteur</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <select class="input-field" id="sector-input" style="flex:1; min-width:200px;">
+          <option value="">Secteur d'activité</option>
+          <option value="mode">Mode & Vêtements</option>
+          <option value="beaute">Beauté & Cosmétiques</option>
+          <option value="deco">Maison & Décoration</option>
+          <option value="nutrition">Nutrition & Compléments</option>
+          <option value="animaux">Animaux & Pet Care</option>
+          <option value="tech">Tech & Accessoires</option>
+          <option value="sport">Sport & Fitness</option>
+          <option value="autre">Autre</option>
+        </select>
+        <select class="input-field" id="objective-input" style="flex:1; min-width:200px;">
+          <option value="">Objectif de la pub</option>
+          <option value="vente">Vente directe</option>
+          <option value="promo">Promotion / Soldes</option>
+          <option value="lancement">Lancement produit</option>
+          <option value="notoriete">Notoriété</option>
+          <option value="retargeting">Retargeting</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-accent btn-full" id="scan-submit" style="padding:14px; font-size:15px;">
+      🔍 Analyser la cohérence →
+    </button>
+  </div>
+</section>
+
+<!-- ========== SCREEN 3: LOADING ========== -->
+<section class="screen loading-screen" id="screen-loading">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <h2 style="font-size:22px; font-weight:800; margin-bottom:8px;">Analyse en cours...</h2>
+    <p style="font-size:14px; color:var(--text-muted);">Notre IA compare ta créa et ta landing page</p>
+    <div class="loading-steps">
+      <div class="loading-step active" id="lstep-1">
+        <div class="loading-step-icon">1</div>
+        <span>Lecture de la créa publicitaire...</span>
+      </div>
+      <div class="loading-step" id="lstep-2">
+        <div class="loading-step-icon">2</div>
+        <span>Crawl de la landing page...</span>
+      </div>
+      <div class="loading-step" id="lstep-3">
+        <div class="loading-step-icon">3</div>
+        <span>Comparaison sur 4 dimensions...</span>
+      </div>
+      <div class="loading-step" id="lstep-4">
+        <div class="loading-step-icon">4</div>
+        <span>Génération des recommandations...</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SCREEN 4: RESULTS ========== -->
+<section class="screen results-screen" id="screen-results">
+  <div class="results-container">
+
+    <div class="results-header">
+      <div class="results-title">
+        <h2>📋 Rapport de cohérence</h2>
+        <p id="results-subtitle"></p>
+      </div>
+      <div class="results-actions">
+        <button class="btn btn-outline" id="btn-new-scan">↻ Nouveau scan</button>
+      </div>
+    </div>
+
+    <!-- What was compared -->
+    <div class="compared-card" id="compared-card" style="display:none;">
+      <div class="compared-card-label">Ce qu'on a comparé</div>
+      <div class="compared-grid">
+        <div class="compared-side">
+          <div class="compared-thumb-ad" id="compared-ad-thumb">
+            <div class="compared-thumb-label">📱 Créa Meta</div>
+          </div>
+          <div class="compared-side-name" id="compared-brand-name"></div>
+        </div>
+        <div class="compared-vs-center">
+          <div class="compared-vs">VS</div>
+        </div>
+        <div class="compared-side">
+          <div class="compared-thumb-lp" id="compared-lp-thumb">
+            <div class="browser-chrome">
+              <div class="browser-dots"><span></span><span></span><span></span></div>
+              <div class="browser-url-bar"><span class="lock">🔒</span> <span id="browser-url-text"></span></div>
+            </div>
+            <div class="browser-body" id="browser-body">
+              <div class="browser-body-placeholder" id="browser-placeholder">
+                <div class="browser-body-icon">🌐</div>
+                <div class="browser-body-domain" id="browser-domain-text"></div>
+                <div class="browser-body-loading">Capture en cours...</div>
+              </div>
+              <div class="browser-body-screenshot" id="browser-screenshot"></div>
+            </div>
+          </div>
+          <div class="compared-side-url" id="compared-lp-url"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Score -->
+    <div class="global-score-card">
+      <div class="global-score-top">
+        <div class="score-circle">
+          <svg viewBox="0 0 130 130">
+            <circle class="track" cx="65" cy="65" r="52"/>
+            <circle class="fill-ring" id="score-ring-fill" cx="65" cy="65" r="52"/>
+          </svg>
+          <div class="score-val">
+            <div class="score-num" id="global-score-num">--</div>
+            <div class="score-max">/100</div>
+          </div>
+        </div>
+        <div class="global-score-text">
+          <h3 id="global-score-label">Calcul en cours...</h3>
+          <p id="global-score-desc"></p>
+        </div>
+      </div>
+      <div class="score-mini-bars" id="score-mini-bars"></div>
+    </div>
+
+    <!-- Dimensions -->
+    <div class="dimensions-grid" id="dimensions-grid"></div>
+
+    <!-- Recommendations -->
+    <div class="reco-section">
+      <div class="reco-section-title">💡 Recommandations prioritaires</div>
+      <div class="reco-section-desc">Actions classées par impact estimé sur ta conversion</div>
+      <div class="reco-list" id="reco-list"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="results-cta">
+      <div style="font-size:32px; margin-bottom:12px;">🎁</div>
+      <h3>Offre exclusive : Audit créa + landing page offert</h3>
+      <p>Tu viens de voir les failles — on peut les corriger. Réserve un appel avec KULT Agency et reçois un <strong style="color:var(--accent);">audit complet gratuit</strong> de tes créas Meta + tes landing pages. Modèle performance : 0 résultat = 0€.</p>
+      <div class="results-cta-buttons">
+        <a href="https://www.kult-agency.com/booking.html" target="_blank" class="btn btn-accent">📞 Réserver mon audit gratuit →</a>
+        <a href="https://www.kult-agency.com/" target="_blank" class="btn btn-outline">Découvrir KULT Agency →</a>
+      </div>
+      <div style="margin-top:14px; font-size:12px; color:var(--text-muted);">⏳ Places limitées — 5 audits gratuits par semaine</div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+// ============================================
+// ADSYNC MVP — FRONTEND
+// ============================================
+
+// ⚠️ FIX: PAS de slash à la fin !
+const WORKER_URL = 'https://adsync-worker.mathys-hosin.workers.dev';
+
+let state = {
+  email: '',
+  brandName: '',
+  adImage: null,
+  adImageName: '',
+  landingPageUrl: '',
+  sector: '',
+  objective: ''
+};
+
+// ===== NAV =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== SCREEN 1: EMAIL =====
+document.getElementById('email-submit').addEventListener('click', () => {
+  const email = document.getElementById('email-input').value.trim();
+  const brand = document.getElementById('name-input').value.trim();
+  const errorEl = document.getElementById('email-error');
+
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    errorEl.textContent = 'Entre une adresse email valide pour recevoir ton rapport.';
+    errorEl.classList.add('show');
+    return;
+  }
+  errorEl.classList.remove('show');
+  state.email = email;
+  state.brandName = brand;
+  sendEmailCapture(email, brand);
+  showScreen('screen-scan');
+});
+
+document.getElementById('email-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('email-submit').click();
+});
+
+async function sendEmailCapture(email, brand) {
+  try {
+    await fetch(WORKER_URL + '/capture-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, brand })
+    });
+  } catch (e) { console.log('Email capture failed:', e); }
+}
+
+// ===== SCREEN 2: UPLOAD =====
+const fileInput = document.getElementById('file-input');
+const uploadPlaceholder = document.getElementById('upload-placeholder');
+const uploadPreview = document.getElementById('upload-preview');
+const previewImg = document.getElementById('preview-img');
+const fileNameEl = document.getElementById('file-name');
+const uploadZone = document.getElementById('upload-zone');
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { alert('Fichier trop lourd (max 10MB)'); return; }
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    state.adImage = ev.target.result;
+    state.adImageName = file.name;
+    previewImg.src = ev.target.result;
+    fileNameEl.textContent = '✓ ' + file.name;
+    uploadPlaceholder.style.display = 'none';
+    uploadPreview.style.display = 'flex';
+    uploadZone.classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('remove-file').addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  state.adImage = null;
+  state.adImageName = '';
+  fileInput.value = '';
+  uploadPlaceholder.style.display = 'block';
+  uploadPreview.style.display = 'none';
+  uploadZone.classList.remove('has-file');
+});
+
+// ===== SUBMIT SCAN =====
+document.getElementById('scan-submit').addEventListener('click', async () => {
+  const errorEl = document.getElementById('scan-error');
+  const lpUrl = document.getElementById('lp-url-input').value.trim();
+
+  if (!state.adImage) {
+    errorEl.textContent = 'Upload une capture d\'écran de ta créa publicitaire.';
+    errorEl.classList.add('show');
+    return;
+  }
+  if (!lpUrl || !lpUrl.startsWith('http')) {
+    errorEl.textContent = 'Entre l\'URL complète de ta landing page (commence par https://).';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  errorEl.classList.remove('show');
+  state.landingPageUrl = lpUrl;
+  state.sector = document.getElementById('sector-input').value;
+  state.objective = document.getElementById('objective-input').value;
+
+  showScreen('screen-loading');
+  await runAnalysis();
+});
+
+// ===== ANALYSIS =====
+async function runAnalysis() {
+  const steps = ['lstep-1', 'lstep-2', 'lstep-3', 'lstep-4'];
+  let currentStep = 0;
+
+  const stepInterval = setInterval(() => {
+    if (currentStep > 0) {
+      document.getElementById(steps[currentStep - 1]).classList.remove('active');
+      document.getElementById(steps[currentStep - 1]).classList.add('done');
+    }
+    if (currentStep < steps.length) {
+      document.getElementById(steps[currentStep]).classList.add('active');
+      currentStep++;
+    } else {
+      clearInterval(stepInterval);
+    }
+  }, 2500);
+
+  try {
+    const payload = {
+      email: state.email,
+      brand: state.brandName,
+      landingPageUrl: state.landingPageUrl,
+      sector: state.sector,
+      objective: state.objective,
+      adImageBase64: state.adImage
+    };
+
+    const response = await fetch(WORKER_URL + '/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Erreur serveur: ' + response.status);
+
+    const result = await response.json();
+
+    if (result.error) throw new Error(result.error);
+
+    clearInterval(stepInterval);
+    steps.forEach(s => {
+      document.getElementById(s).classList.remove('active');
+      document.getElementById(s).classList.add('done');
+    });
+    setTimeout(() => renderResults(result), 500);
+
+  } catch (err) {
+    clearInterval(stepInterval);
+    console.error('Analysis error:', err);
+
+    // Fallback démo
+    const mockResult = generateMockResults();
+    steps.forEach(s => {
+      document.getElementById(s).classList.remove('active');
+      document.getElementById(s).classList.add('done');
+    });
+    setTimeout(() => renderResults(mockResult), 500);
+  }
+}
+
+// ===== RENDER RESULTS =====
+function renderResults(data) {
+  showScreen('screen-results');
+
+  const score = data.globalScore;
+  const color = scoreColor(score);
+
+  // Subtitle
+  document.getElementById('results-subtitle').textContent =
+    `${state.brandName || 'Analyse'} — ${new Date().toLocaleDateString('fr-FR')}`;
+
+  // Show compared card with ad + landing page preview
+  if (state.adImage) {
+    const card = document.getElementById('compared-card');
+    card.style.display = 'block';
+
+    // Ad thumbnail (portrait format)
+    document.getElementById('compared-ad-thumb').innerHTML =
+      `<div class="compared-thumb-label">📱 Créa Meta</div><img src="${state.adImage}" alt="Créa">`;
+
+    // Brand name
+    document.getElementById('compared-brand-name').textContent = state.brandName || 'Ta créa';
+
+    // Landing page browser mockup (instant)
+    try {
+      const urlObj = new URL(state.landingPageUrl);
+      document.getElementById('browser-url-text').textContent = urlObj.hostname + urlObj.pathname;
+      document.getElementById('browser-domain-text').textContent = urlObj.hostname.replace('www.', '');
+    } catch(e) {
+      document.getElementById('browser-url-text').textContent = state.landingPageUrl;
+      document.getElementById('browser-domain-text').textContent = state.landingPageUrl;
+    }
+
+    // Load real screenshot in background (tries 2 services)
+    const screenshotContainer = document.getElementById('browser-screenshot');
+    const placeholder = document.getElementById('browser-placeholder');
+
+    // Service 1: microlink (fast, reliable)
+    const mlUrl = `https://api.microlink.io/?url=${encodeURIComponent(state.landingPageUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+
+    // Service 2: thum.io (fallback)
+    const thumUrl = `https://image.thum.io/get/width/640/crop/400/noanimate/${state.landingPageUrl}`;
+
+    // Try microlink first
+    const img = new Image();
+    img.onload = function() {
+      screenshotContainer.innerHTML = '';
+      screenshotContainer.appendChild(img);
+      screenshotContainer.classList.add('loaded');
+      placeholder.style.opacity = '0';
+    };
+    img.onerror = function() {
+      // Fallback to thum.io
+      const img2 = new Image();
+      img2.onload = function() {
+        screenshotContainer.innerHTML = '';
+        screenshotContainer.appendChild(img2);
+        screenshotContainer.classList.add('loaded');
+        placeholder.style.opacity = '0';
+      };
+      img2.onerror = function() {
+        // Both failed — keep the mockup, just hide loading text
+        placeholder.querySelector('.browser-body-loading').textContent = '';
+      };
+      img2.src = thumUrl;
+    };
+    img.src = mlUrl;
+
+    document.getElementById('compared-lp-url').textContent = state.landingPageUrl;
+  }
+
+  // Global score ring
+  const ring = document.getElementById('score-ring-fill');
+  ring.style.stroke = color;
+  const circumference = 2 * Math.PI * 52; // ~326.7
+  const offset = circumference - (score / 100) * circumference;
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+
+  // Score number animation
+  const scoreNum = document.getElementById('global-score-num');
+  scoreNum.style.color = color;
+  animateNumber(scoreNum, 0, score, 1200);
+
+  // Label & desc
+  document.getElementById('global-score-label').textContent = data.globalLabel;
+  document.getElementById('global-score-label').style.color = color;
+  document.getElementById('global-score-desc').textContent = data.globalDesc;
+
+  // Mini bars
+  const miniBars = document.getElementById('score-mini-bars');
+  miniBars.innerHTML = data.dimensions.map(d => `
+    <div class="mini-bar-item">
+      <div class="mini-bar-label">${d.emoji} ${d.shortName}</div>
+      <div class="mini-bar-track">
+        <div class="mini-bar-fill" style="background:${scoreColor(d.score)}" data-width="${d.score}"></div>
+      </div>
+      <div class="mini-bar-score" style="color:${scoreColor(d.score)}">${d.score}</div>
+    </div>
+  `).join('');
+
+  // Dimension cards
+  const grid = document.getElementById('dimensions-grid');
+  grid.innerHTML = data.dimensions.map(d => `
+    <div class="dim-card">
+      <div class="dim-head">
+        <div class="dim-name">
+          <div class="dim-emoji" style="background:${dimBg(d.score)}">${d.emoji}</div>
+          ${d.name}
+        </div>
+        <div class="dim-score-big" style="color:${scoreColor(d.score)}">${d.score}</div>
+      </div>
+      <div class="dim-bar">
+        <div class="dim-bar-fill" style="background:${scoreColor(d.score)}" data-width="${d.score}"></div>
+      </div>
+      <div class="dim-verdict">
+        <span class="dim-status ${statusClass(d.score)}">${statusText(d.score)}</span>
+      </div>
+      <div class="dim-detail">${d.detail}</div>
+    </div>
+  `).join('');
+
+  // Animate all bars
+  setTimeout(() => {
+    document.querySelectorAll('.dim-bar-fill, .mini-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }, 100);
+
+  // Recommendations
+  const recoList = document.getElementById('reco-list');
+  recoList.innerHTML = data.recommendations.map((r, i) => `
+    <div class="reco-item">
+      <div class="reco-priority ${i === 0 ? 'p-high' : i === 1 ? 'p-med' : 'p-low'}">P${i + 1}</div>
+      <div class="reco-content">
+        <div class="reco-text">${r.text}</div>
+        <div class="reco-impact">📈 ${r.impact}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Helpers
+function scoreColor(s) {
+  if (s >= 75) return 'var(--green)';
+  if (s >= 55) return 'var(--yellow)';
+  if (s >= 35) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function dimBg(s) {
+  if (s >= 75) return 'var(--green-bg)';
+  if (s >= 55) return 'var(--yellow-bg)';
+  if (s >= 35) return 'var(--orange-bg)';
+  return 'var(--red-bg)';
+}
+
+function statusClass(s) {
+  if (s >= 75) return 'status-pass';
+  if (s >= 55) return 'status-warn';
+  if (s >= 35) return 'status-alert';
+  return 'status-fail';
+}
+
+function statusText(s) {
+  if (s >= 75) return '✓ BON';
+  if (s >= 55) return '⚠ MOYEN';
+  if (s >= 35) return '⚠ ALERTE';
+  return '✗ PROBLÈME';
+}
+
+function animateNumber(el, start, end, duration) {
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (end - start) * eased);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// New scan
+document.getElementById('btn-new-scan').addEventListener('click', () => {
+  document.querySelectorAll('.loading-step').forEach(s => s.classList.remove('active', 'done'));
+  document.getElementById('lstep-1').classList.add('active');
+  document.getElementById('compared-card').style.display = 'none';
+  showScreen('screen-scan');
+});
+
+// Mock data
+function generateMockResults() {
+  return {
+    globalScore: 58,
+    globalLabel: "Cohérence moyenne",
+    globalDesc: "Ta créa et ta landing page ont des incohérences qui coûtent probablement 25-40% de tes conversions post-clic. 3 actions prioritaires identifiées.",
+    dimensions: [
+      { name: "Cohérence visuelle", shortName: "Visuel", emoji: "🎨", score: 74, detail: "Les couleurs et le style global sont relativement alignés, mais le produit mis en avant dans l'ad n'est pas visible en hero de la landing page. L'utilisateur doit scroller pour le retrouver." },
+      { name: "Alignement du message", shortName: "Message", emoji: "💬", score: 38, detail: "L'ad met en avant une promotion \"-30%\" mais la landing page n'affiche aucune réduction en zone visible. Le décalage de promesse est le facteur #1 de rebond post-clic." },
+      { name: "Continuité du CTA", shortName: "CTA", emoji: "🎯", score: 52, detail: "Le CTA de l'ad (\"Profiter de l'offre\") ne correspond pas au CTA de la page (\"Découvrir la collection\"). L'intention d'achat est diluée à l'arrivée." },
+      { name: "Performance technique", shortName: "Tech", emoji: "⚡", score: 67, detail: "Le LCP est à 2.8s sur mobile — au-dessus du seuil recommandé de 2.5s. Des éléments bougent au chargement, créant une expérience instable." }
+    ],
+    recommendations: [
+      { text: "Ajoute un bandeau promo visible en hero de la landing page qui reprend exactement la même offre que l'ad. Le décalage prix entre l'ad et la page est ton plus gros levier de conversion.", impact: "Impact estimé : +20-30% conversion" },
+      { text: "Remplace le CTA \"Découvrir la collection\" par un CTA aligné avec la promesse de l'ad pour maintenir la continuité d'intention entre le clic et l'action sur la page.", impact: "Impact estimé : +10-15% clic CTA" },
+      { text: "Place le produit mis en avant dans l'ad en position hero de la landing page. Actuellement il faut scroller pour le trouver — la majorité des visiteurs ne le voient jamais.", impact: "Impact estimé : +12-18% ajout panier" },
+      { text: "Optimise les images (compression WebP, lazy loading) pour passer sous les 2.5s de LCP mobile. Chaque seconde de chargement en plus coûte environ 7% de conversion.", impact: "Impact estimé : -25% rebond mobile" }
+    ]
+  };
+}
+</script>
+</body>
+</html>

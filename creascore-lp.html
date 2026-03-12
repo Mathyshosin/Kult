@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quel score obtient votre pub ? | CréaScore by KULT</title>
+    <meta name="description" content="Votre pub Meta Ads performe-t-elle vraiment ? Notre IA analyse votre créative en 30 secondes et vous dit exactement quoi corriger. Gratuit.">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a0f0a'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='18' font-weight='800' fill='%23e8854a' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8TDHRSFTG"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-N8TDHRSFTG');
+    </script>
+    
+    <!-- Meta Pixel -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '4269179350064723');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=4269179350064723&ev=PageView&noscript=1"/></noscript>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0c0805;
+            --bg-warm: #161009;
+            --bg-card: rgba(255,255,255,0.035);
+            --orange: #e8854a;
+            --orange-deep: #d4692e;
+            --orange-light: #f5a66e;
+            --text: #faf6f3;
+            --text-sec: #bfad9f;
+            --text-muted: #6d5f54;
+            --green: #22c55e;
+            --border: rgba(255,255,255,0.06);
+            --font-d: 'Plus Jakarta Sans', sans-serif;
+            --font-b: 'DM Sans', sans-serif;
+            --r: 16px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-b);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Background ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(232,133,74,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(212,105,46,0.05) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.018;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: rgba(12,8,5,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-logo {
+            font-family: var(--font-d);
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .topbar-logo span { color: var(--orange); }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-link {
+            font-size: 0.82rem;
+            color: var(--text-sec);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .topbar-link:hover { color: var(--text); }
+
+        .topbar-cta {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            border-radius: 100px;
+            color: white;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .topbar-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,133,74,0.3); }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 24px 60px;
+            gap: 0;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 18px;
+            background: rgba(232,133,74,0.1);
+            border: 1px solid rgba(232,133,74,0.18);
+            border-radius: 100px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--orange-light);
+            margin-bottom: 28px;
+            opacity: 0;
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .hero h1 {
+            font-family: var(--font-d);
+            font-size: clamp(2.2rem, 7vw, 4rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.035em;
+            margin-bottom: 18px;
+            opacity: 0;
+            animation: fadeUp 0.7s ease 0.4s forwards;
+        }
+
+        .hero h1 em {
+            font-style: normal;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .hero h1 em::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--orange);
+            opacity: 0.35;
+            border-radius: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: underline 0.6s ease 1.2s forwards;
+        }
+
+        @keyframes underline { to { transform: scaleX(1); } }
+
+        .hero-sub {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: var(--text-sec);
+            max-width: 520px;
+            margin-bottom: 36px;
+            opacity: 0;
+            animation: fadeUp 0.6s ease 0.6s forwards;
+        }
+
+        /* ── Animated Score Demo ── */
+        .score-demo {
+            position: relative;
+            width: 280px;
+            height: 170px;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.8s forwards;
+        }
+
+        .score-demo-card {
+            position: absolute;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            backdrop-filter: blur(12px);
+        }
+
+        .score-main {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .score-main-num {
+            font-family: var(--font-d);
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--orange);
+            line-height: 1;
+        }
+
+        .score-main-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .score-mini {
+            bottom: 0;
+            width: 110px;
+            padding: 12px 14px;
+            z-index: 1;
+        }
+
+        .score-mini.left {
+            left: 0;
+            animation: floatLeft 3s ease-in-out infinite;
+        }
+
+        .score-mini.right {
+            right: 0;
+            animation: floatRight 3s ease-in-out 0.5s infinite;
+        }
+
+        @keyframes floatLeft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes floatRight {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .score-mini-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .score-mini-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .score-mini-fill {
+            height: 100%;
+            border-radius: 100px;
+            animation: growBar 1.5s ease 1.5s forwards;
+            width: 0;
+        }
+
+        .score-mini-fill.f1 { background: var(--green); --target: 72%; }
+        .score-mini-fill.f2 { background: var(--orange); --target: 45%; }
+        .score-mini-fill.f3 { background: var(--green); --target: 81%; }
+        .score-mini-fill.f4 { background: #ef4444; --target: 33%; }
+
+        @keyframes growBar { to { width: var(--target); } }
+
+        /* ── CTA ── */
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            border-radius: 100px;
+            color: white;
+            font-family: var(--font-d);
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 6px 30px rgba(232,133,74,0.3);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeUp 0.6s ease 1s forwards;
+        }
+
+        .hero-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s ease 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            30% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(232,133,74,0.45);
+        }
+
+        .hero-cta svg { width: 18px; height: 18px; }
+
+        .hero-proof {
+            margin-top: 20px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            opacity: 0;
+            animation: fadeUp 0.5s ease 1.2s forwards;
+        }
+        .hero-proof strong { color: var(--green); font-weight: 600; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Value Props ── */
+        .values {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 650px) {
+            .values-grid { grid-template-columns: 1fr; gap: 14px; }
+        }
+
+        .value-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .value-card:hover {
+            border-color: rgba(232,133,74,0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+
+        .value-icon {
+            font-size: 2rem;
+            margin-bottom: 14px;
+        }
+
+        .value-title {
+            font-family: var(--font-d);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .value-text {
+            font-size: 0.88rem;
+            color: var(--text-sec);
+            line-height: 1.5;
+        }
+
+        /* ── How it works ── */
+        .how {
+            position: relative;
+            z-index: 1;
+            padding: 80px 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .how-title {
+            font-family: var(--font-d);
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 50px;
+            letter-spacing: -0.02em;
+        }
+
+        .how-steps {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            position: relative;
+        }
+
+        .how-step {
+            flex: 1;
+            text-align: center;
+            padding: 0 16px;
+            position: relative;
+        }
+
+        .how-num {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-d);
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .how-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: calc(50% + 32px);
+            right: calc(-50% + 32px);
+            height: 2px;
+            background: rgba(232,133,74,0.2);
+            z-index: 1;
+        }
+
+        .how-step h3 {
+            font-family: var(--font-d);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .how-step p {
+            font-size: 0.85rem;
+            color: var(--text-sec);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .how-steps { flex-direction: column; gap: 32px; }
+            .how-step:not(:last-child)::after { display: none; }
+        }
+
+        /* ── Problems ── */
+        .problems {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 80px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .problems-title {
+            font-family: var(--font-d);
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 36px;
+            letter-spacing: -0.02em;
+        }
+
+        .problem-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .problem-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 22px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .problem-item:hover {
+            border-color: rgba(239,68,68,0.2);
+            background: rgba(239,68,68,0.04);
+        }
+
+        .problem-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .problem-text { color: var(--text-sec); }
+        .problem-text strong { color: var(--text); font-weight: 600; }
+
+        /* ── Final CTA ── */
+        .final-cta {
+            position: relative;
+            z-index: 1;
+            padding: 80px 24px 100px;
+            text-align: center;
+        }
+
+        .final-card {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 48px 36px;
+            background: linear-gradient(145deg, rgba(232,133,74,0.08), var(--bg-card));
+            border: 1px solid rgba(232,133,74,0.15);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .final-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(232,133,74,0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .final-card h2 {
+            font-family: var(--font-d);
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+
+        .final-card p {
+            color: var(--text-sec);
+            margin-bottom: 28px;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .final-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            border-radius: 100px;
+            color: white;
+            font-family: var(--font-d);
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 6px 30px rgba(232,133,74,0.3);
+            position: relative;
+        }
+
+        .final-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(232,133,74,0.45);
+        }
+
+        .final-btn svg { width: 18px; height: 18px; }
+
+        .final-note {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            position: relative;
+        }
+
+        /* ── Social proof strip ── */
+        .proof-strip {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            padding: 32px 24px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .proof-item {
+            text-align: center;
+        }
+
+        .proof-num {
+            font-family: var(--font-d);
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--orange);
+        }
+
+        .proof-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ── Footer ── */
+        .foot {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 32px 24px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .foot a {
+            color: var(--orange-light);
+            text-decoration: none;
+        }
+        .foot a:hover { text-decoration: underline; }
+
+        /* ── Scroll animation ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Score counter ── */
+        .counting { transition: none; }
+
+        @media (max-width: 500px) {
+            .topbar-link { display: none; }
+            .score-demo { transform: scale(0.85); margin-bottom: 20px; }
+            .proof-strip { gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <a href="https://kult-agency.com" class="topbar-logo" target="_blank">KULT<span>.</span></a>
+        <div class="topbar-right">
+            <a href="https://kult-agency.com" class="topbar-link" target="_blank">Découvrir l'agence</a>
+            <a href="https://www.kult-agency.com/booking.html" class="topbar-cta" target="_blank">Audit gratuit</a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-eyebrow">🤖 Analyse IA gratuite · 30 secondes</div>
+
+        <h1>Quel score obtient<br><em>votre pub</em> ?</h1>
+
+        <p class="hero-sub">83% des pubs e-commerce perdent des ventes à cause d'erreurs évitables. Notre IA les détecte en 30 secondes.</p>
+
+        <!-- Animated Score -->
+        <div class="score-demo">
+            <div class="score-demo-card score-main">
+                <div class="score-main-num" id="heroScore">0</div>
+                <div class="score-main-label">/ 100</div>
+            </div>
+            <div class="score-demo-card score-mini left">
+                <div class="score-mini-label">Hook visuel</div>
+                <div class="score-mini-bar"><div class="score-mini-fill f1"></div></div>
+                <div style="height: 6px;"></div>
+                <div class="score-mini-label">Preuve sociale</div>
+                <div class="score-mini-bar"><div class="score-mini-fill f3"></div></div>
+            </div>
+            <div class="score-demo-card score-mini right">
+                <div class="score-mini-label">Call-to-action</div>
+                <div class="score-mini-bar"><div class="score-mini-fill f2"></div></div>
+                <div style="height: 6px;"></div>
+                <div class="score-mini-label">Contraste</div>
+                <div class="score-mini-bar"><div class="score-mini-fill f4"></div></div>
+            </div>
+        </div>
+
+        <a href="creascore.html" target="_blank" class="hero-cta" onclick="trackCTA('hero')">
+            Tester ma pub gratuitement
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+
+        <div class="hero-proof"><strong>✓ Gratuit</strong> · Aucune inscription · Résultats instantanés</div>
+    </section>
+
+    <!-- Social proof -->
+    <div class="proof-strip reveal">
+        <div class="proof-item">
+            <div class="proof-num">+280K€</div>
+            <div class="proof-label">générés pour nos clients</div>
+        </div>
+        <div class="proof-item">
+            <div class="proof-num">4.2x</div>
+            <div class="proof-label">ROAS moyen</div>
+        </div>
+        <div class="proof-item">
+            <div class="proof-num">30s</div>
+            <div class="proof-label">pour un diagnostic</div>
+        </div>
+        <div class="proof-item">
+            <div class="proof-num">6</div>
+            <div class="proof-label">critères analysés</div>
+        </div>
+    </div>
+
+    <!-- Value Props -->
+    <div class="values">
+        <div class="values-grid">
+            <div class="value-card reveal">
+                <div class="value-icon">⚡</div>
+                <div class="value-title">30 secondes</div>
+                <div class="value-text">Uploadez votre créa, l'IA fait le reste. Résultat immédiat, pas d'attente.</div>
+            </div>
+            <div class="value-card reveal">
+                <div class="value-icon">🎯</div>
+                <div class="value-title">Score sur 100</div>
+                <div class="value-text">6 critères analysés : hook, CTA, contraste, preuve sociale, hiérarchie, proposition valeur.</div>
+            </div>
+            <div class="value-card reveal">
+                <div class="value-icon">🔧</div>
+                <div class="value-title">Actionnables</div>
+                <div class="value-text">Pas de blabla. Des recommandations concrètes avec l'impact estimé sur vos résultats.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problems -->
+    <div class="problems">
+        <h2 class="problems-title reveal">Votre pub a peut-être ces problèmes</h2>
+        <div class="problem-list">
+            <div class="problem-item reveal">
+                <span class="problem-icon">🚫</span>
+                <span class="problem-text"><strong>Pas de hook</strong> — Le scroll continue sans s'arrêter sur votre pub</span>
+            </div>
+            <div class="problem-item reveal">
+                <span class="problem-icon">👻</span>
+                <span class="problem-text"><strong>CTA invisible</strong> — Le bouton se perd dans le design, personne ne clique</span>
+            </div>
+            <div class="problem-item reveal">
+                <span class="problem-icon">🤷</span>
+                <span class="problem-text"><strong>Valeur floue</strong> — Impossible de comprendre l'offre en moins de 2 secondes</span>
+            </div>
+            <div class="problem-item reveal">
+                <span class="problem-icon">😶</span>
+                <span class="problem-text"><strong>Zéro preuve sociale</strong> — Rien ne dit au prospect que d'autres ont acheté</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="how">
+        <h2 class="how-title reveal">Comment ça marche</h2>
+        <div class="how-steps reveal">
+            <div class="how-step">
+                <div class="how-num">1</div>
+                <h3>Uploadez</h3>
+                <p>Glissez votre image ou vidéo de pub Meta Ads</p>
+            </div>
+            <div class="how-step">
+                <div class="how-num">2</div>
+                <h3>L'IA analyse</h3>
+                <p>Score, critères, prévisions CTR et ciblage optimal</p>
+            </div>
+            <div class="how-step">
+                <div class="how-num">3</div>
+                <h3>Vous corrigez</h3>
+                <p>Appliquez les recommandations et regardez vos résultats décoller</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="final-cta">
+        <div class="final-card reveal">
+            <h2>Prêt à découvrir votre score ?</h2>
+            <p>Votre première analyse est 100% gratuite. Pas d'inscription, pas de carte bancaire.</p>
+            <a href="creascore.html" target="_blank" class="final-btn" onclick="trackCTA('bottom')">
+                Analyser ma pub maintenant
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <div class="final-note">Ou <a href="https://www.kult-agency.com/booking.html" target="_blank" style="color: var(--orange-light); text-decoration: underline;">réservez un audit gratuit</a> avec nos experts</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="foot">
+        <p>© 2025 <a href="https://kult-agency.com" target="_blank">KULT Agency</a> · <a href="https://kult-agency.com" target="_blank">Agence Meta Ads E-commerce</a> · <a href="mailto:contact@kult-agency.fr">contact@kult-agency.fr</a></p>
+    </div>
+
+    <script>
+        // Score counter animation
+        function animateCounter(el, target, duration) {
+            let start = 0;
+            const step = target / (duration / 16);
+            const run = () => {
+                start += step;
+                if (start < target) {
+                    el.textContent = Math.floor(start);
+                    requestAnimationFrame(run);
+                } else {
+                    el.textContent = target;
+                }
+            };
+            run();
+        }
+
+        // Animate hero score after page load
+        setTimeout(() => {
+            animateCounter(document.getElementById('heroScore'), 72, 1800);
+        }, 1400);
+
+        // Scroll reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('visible'), i * 80);
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // Tracking
+        function trackCTA(location) {
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'Lead', { content_name: 'CréaScore CTA', content_category: location });
+            }
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'cta_click', { event_category: 'CréaScore', event_label: location });
+            }
+        }
+    </script>
+</body>
+</html>

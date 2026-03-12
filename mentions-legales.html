@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentions Légales - KULT.</title>
+    <meta name="description" content="Mentions légales du site KULT Agency - Agence créative Meta Ads">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0c0a09;
+            --bg-card: rgba(255,255,255,0.03);
+            --orange: #e8854a;
+            --orange-deep: #d4692e;
+            --text-primary: #fafaf9;
+            --text-secondary: #a8a29e;
+            --text-muted: #78716c;
+            --font-display: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--orange);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px 100px;
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--orange) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-intro {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .page-intro strong {
+            color: var(--orange);
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .section:hover {
+            border-color: rgba(232, 133, 74, 0.2);
+        }
+
+        .section-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            line-height: 32px;
+            margin-bottom: 16px;
+        }
+
+        .section h2 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .section p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section li {
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .section li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 8px;
+            height: 8px;
+            background: var(--orange);
+            border-radius: 50%;
+        }
+
+        .section li strong {
+            color: var(--text-primary);
+        }
+
+        .section a {
+            color: var(--orange);
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .section a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .highlight {
+            color: var(--orange);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 24px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--orange);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .container {
+                padding: 40px 20px 80px;
+            }
+
+            .section {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="index.html" class="logo">KULT.</a>
+        <a href="index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour au site
+        </a>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">Mentions Légales</h1>
+        <p class="page-intro">
+            Conformément aux dispositions des Articles 6-III et 19 de la Loi n°2004-575 du 21 juin 2004 pour la Confiance dans l'économie numérique (L.C.E.N.), il est porté à la connaissance des utilisateurs et visiteurs du site <strong>https://kult-agency.fr/</strong> les présentes mentions légales.
+        </p>
+
+        <div class="section">
+            <span class="section-number">1</span>
+            <h2>Éditeur du site</h2>
+            <p>Le site <strong>https://kult-agency.fr/</strong> est édité par :</p>
+            <ul>
+                <li><strong>Nom/Raison Sociale :</strong> KULT Agency</li>
+                <li><strong>Statut juridique :</strong> Entrepreneur Individuel (Micro-entreprise) – En cours de transformation en société</li>
+                <li><strong>Siège social :</strong> 212 rue Solférino, 59000 Lille</li>
+                <li><strong>SIRET :</strong> 994 477 008 00019</li>
+                <li><strong>Directeur de la publication :</strong> Mathys Music</li>
+                <li><strong>Contact :</strong> <a href="mailto:contact@kult-agency.fr">contact@kult-agency.fr</a></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <span class="section-number">2</span>
+            <h2>Hébergeur du site</h2>
+            <p>Le site est hébergé par :</p>
+            <ul>
+                <li><strong>Hébergeur :</strong> OVH SAS</li>
+                <li><strong>Adresse :</strong> 2 rue Kellermann, 59100 Roubaix, France</li>
+                <li><strong>Site internet :</strong> <a href="https://www.ovhcloud.com" target="_blank">www.ovhcloud.com</a></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <span class="section-number">3</span>
+            <h2>Propriété intellectuelle</h2>
+            <p>
+                L'ensemble de ce site (structure, design, logos, textes, graphismes et autres fichiers) constitue une œuvre protégée par les lois en vigueur sur la propriété intellectuelle. Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable de l'éditeur.
+            </p>
+            <p>
+                La marque <strong class="highlight">KULT</strong> et son logo sont la propriété exclusive de ses fondateurs.
+            </p>
+        </div>
+
+        <div class="section">
+            <span class="section-number">4</span>
+            <h2>Collecte de données et cookies (RGPD)</h2>
+            <p>
+                Le site peut être amené à collecter des données personnelles (via un formulaire de contact ou l'installation de pixels de suivi type Meta Ads / Google Analytics).
+            </p>
+            <ul>
+                <li><strong>Finalité :</strong> Les données sont collectées pour répondre aux demandes de contact et analyser le trafic du site.</li>
+                <li><strong>Droit des utilisateurs :</strong> Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression des données vous concernant. Pour l'exercer, contactez-nous à l'adresse : <a href="mailto:contact@kult-agency.fr">contact@kult-agency.fr</a></li>
+                <li><strong>Cookies :</strong> L'utilisateur est informé que lors de ses visites sur le site, un cookie peut s'installer automatiquement sur son logiciel de navigation pour des besoins de statistiques et d'affichage.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <span class="section-number">5</span>
+            <h2>Limitation de responsabilité</h2>
+            <p>
+                L'éditeur s'efforce de fournir des informations aussi précises que possible sur le site. Toutefois, il ne pourra être tenu responsable des oublis, des inexactitudes et des carences dans la mise à jour, qu'elles soient de son fait ou du fait des tiers partenaires qui lui fournissent ces informations.
+            </p>
+            <p>
+                Le site <strong>https://kult-agency.fr/</strong> contient des liens vers d'autres sites. L'éditeur n'exerce aucun contrôle sur le contenu de ces sites tiers et décline toute responsabilité à cet égard.
+            </p>
+        </div>
+
+        <div class="section">
+            <span class="section-number">6</span>
+            <h2>Droit applicable</h2>
+            <p>
+                Tout litige en relation avec l'utilisation du site <strong>https://kult-agency.fr/</strong> est soumis au droit français. Il est fait attribution exclusive de juridiction aux tribunaux compétents du siège social de l'éditeur.
+            </p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© 2025 KULT. Tous droits réservés. | <a href="index.html">Retour à l'accueil</a></p>
+    </footer>
+
+</body>
+</html>

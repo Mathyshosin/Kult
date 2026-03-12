@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KULT CRM | Suivi Prospects</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --bg-hover: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #5cff7e;
+            --accent-dim: #3da854;
+            --border: #2a2a2a;
+            --status-contact: #ffd93d;
+            --status-contacted: #6bcbff;
+            --status-replied: #c084fc;
+            --status-call: #ff6b9d;
+            --status-nego: #ff9f43;
+            --status-won: #5cff7e;
+            --status-lost: #ff5757;
+            --starter: #6bcbff;
+            --ads: #c084fc;
+            --performance: #ffd93d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--text-muted);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            padding: 0 2rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-count {
+            background: var(--bg-hover);
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .tab.active .tab-count {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* Main Content */
+        .main {
+            padding: 2rem;
+        }
+
+        /* Filters Bar */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-box::before {
+            content: "⌕";
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Kanban Board */
+        .kanban {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .kanban-column {
+            flex: 0 0 280px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 280px);
+        }
+
+        .column-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .column-title::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .col-a-contacter .column-title::before { background: var(--status-contact); }
+        .col-contacte .column-title::before { background: var(--status-contacted); }
+        .col-repondu .column-title::before { background: var(--status-replied); }
+        .col-call-booke .column-title::before { background: var(--status-call); }
+        .col-en-nego .column-title::before { background: var(--status-nego); }
+        .col-gagne .column-title::before { background: var(--status-won); }
+        .col-perdu .column-title::before { background: var(--status-lost); }
+
+        .column-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-hover);
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+        }
+
+        .column-cards {
+            padding: 0.75rem;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* Cards */
+        .prospect-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .prospect-card:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .prospect-card.dragging {
+            opacity: 0.5;
+            transform: rotate(3deg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-company {
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .card-assignee {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .assignee-cyriaque { background: var(--accent); color: var(--bg-primary); }
+        .assignee-cofondateur { background: var(--status-contacted); color: var(--bg-primary); }
+
+        .card-sector {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-source {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--bg-hover);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .card-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .card-relance {
+            font-size: 0.7rem;
+            color: var(--status-contact);
+        }
+
+        /* Qualified Cards extras */
+        .card-offer {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .offer-starter { background: rgba(107, 203, 255, 0.2); color: var(--starter); }
+        .offer-ads { background: rgba(192, 132, 252, 0.2); color: var(--ads); }
+        .offer-performance { background: rgba(255, 217, 61, 0.2); color: var(--performance); }
+
+        .card-budget {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .card-potential {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .potential-chaud { background: rgba(255, 87, 87, 0.2); color: #ff5757; }
+        .potential-tiede { background: rgba(255, 159, 67, 0.2); color: #ff9f43; }
+        .potential-froid { background: rgba(107, 203, 255, 0.2); color: #6bcbff; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--bg-hover);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--status-lost);
+            border: 1px solid var(--status-lost);
+        }
+
+        .btn-delete:hover {
+            background: var(--status-lost);
+            color: var(--bg-primary);
+        }
+
+        /* Qualified section - table view */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .prospects-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .prospects-table th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+        }
+
+        .prospects-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .prospects-table tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        .prospects-table tr {
+            cursor: pointer;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-en-nego { background: rgba(255, 159, 67, 0.2); color: var(--status-nego); }
+        .status-gagne { background: rgba(92, 255, 126, 0.2); color: var(--status-won); }
+        .status-perdu { background: rgba(255, 87, 87, 0.2); color: var(--status-lost); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 0.875rem;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast-success { border-left: 3px solid var(--accent); }
+        .toast-error { border-left: 3px solid var(--status-lost); }
+
+        /* Config Panel */
+        .config-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .config-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .config-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .config-input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .config-input-group .form-group {
+            flex: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .tabs {
+                padding: 0 1rem;
+                overflow-x: auto;
+            }
+
+            .main {
+                padding: 1rem;
+            }
+
+            .kanban-column {
+                flex: 0 0 260px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .modal {
+                width: 95%;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">KULT<span>.</span>CRM</div>
+        <div class="header-actions">
+            <div class="sync-status">
+                <div class="sync-dot"></div>
+                <span id="sync-text">Synchronisé</span>
+            </div>
+            <button class="btn btn-secondary" onclick="refreshData()">↻ Actualiser</button>
+            <button class="btn btn-primary" onclick="openAddModal()">+ Nouveau prospect</button>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="pipeline" onclick="switchTab('pipeline')">
+            Pipeline
+            <span class="tab-count" id="pipeline-count">0</span>
+        </div>
+        <div class="tab" data-tab="qualified" onclick="switchTab('qualified')">
+            Qualifiés
+            <span class="tab-count" id="qualified-count">0</span>
+        </div>
+        <div class="tab" data-tab="config" onclick="switchTab('config')">
+            ⚙️ Configuration
+        </div>
+    </div>
+
+    <main class="main">
+        <!-- Config Panel -->
+        <div id="config-view" style="display: none;">
+            <div class="config-panel">
+                <div class="config-title">🔗 Connexion Google Sheets</div>
+                <div class="config-description">
+                    Pour synchroniser vos données entre vous et votre co-fondateur, suivez ces étapes :<br><br>
+                    1. Créez une copie du template Google Sheets<br>
+                    2. Dans le Sheet, allez dans Extensions → Apps Script<br>
+                    3. Collez le code fourni et déployez en tant que Web App<br>
+                    4. Copiez l'URL de déploiement ci-dessous
+                </div>
+                <div class="config-input-group">
+                    <div class="form-group">
+                        <label class="form-label">URL de l'API Google Apps Script</label>
+                        <input type="text" class="form-input" id="api-url" placeholder="https://script.google.com/macros/s/...">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveConfig()">Enregistrer</button>
+                </div>
+            </div>
+
+            <div class="config-panel">
+                <div class="config-title">👥 Équipe</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Votre nom</label>
+                        <input type="text" class="form-input" id="user1-name" placeholder="Cyriaque">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nom du co-fondateur</label>
+                        <input type="text" class="form-input" id="user2-name" placeholder="Co-fondateur">
+                    </div>
+                </div>
+                <br>
+                <button class="btn btn-secondary" onclick="saveTeam()">Enregistrer l'équipe</button>
+            </div>
+        </div>
+
+        <!-- Pipeline View -->
+        <div id="pipeline-view">
+            <div class="filters-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="Rechercher un prospect..." id="search-pipeline" onkeyup="filterProspects()">
+                </div>
+                <select class="filter-select" id="filter-assignee" onchange="filterProspects()">
+                    <option value="">Tous les assignés</option>
+                    <option value="Cyriaque">Cyriaque</option>
+                    <option value="Co-fondateur">Co-fondateur</option>
+                </select>
+                <select class="filter-select" id="filter-sector" onchange="filterProspects()">
+                    <option value="">Tous les secteurs</option>
+                    <option value="Mode">Mode</option>
+                    <option value="Beauté">Beauté</option>
+                    <option value="Nutrition">Nutrition</option>
+                    <option value="Maison">Maison</option>
+                    <option value="Pet care">Pet care</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+
+            <div class="kanban" id="kanban-board">
+                <div class="kanban-column col-a-contacter" data-status="nouveau">
+                    <div class="column-header">
+                        <div class="column-title">À contacter</div>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div class="column-cards" id="col-a-contacter"></div>
+                </div>
+                <div class="kanban-column col-contacte" data-status="contacte">
+                    <div class="column-header">
+                        <div class="column-title">Contacté</div>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div class="column-cards" id="col-contacte"></div>
+                </div>
+                <div class="kanban-column col-repondu" data-status="repondu">
+                    <div class="column-header">
+                        <div class="column-title">Répondu</div>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div class="column-cards" id="col-repondu"></div>
+                </div>
+                <div class="kanban-column col-call-booke" data-status="call">
+                    <div class="column-header">
+                        <div class="column-title">Call booké</div>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div class="column-cards" id="col-call-booke"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Qualified View -->
+        <div id="qualified-view" style="display: none;">
+            <div class="filters-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="Rechercher..." id="search-qualified" onkeyup="filterQualified()">
+                </div>
+                <select class="filter-select" id="filter-offer" onchange="filterQualified()">
+                    <option value="">Toutes les offres</option>
+                    <option value="Starter">Offre Starter</option>
+                    <option value="Ads">Offre Ads</option>
+                    <option value="Performance">Offre Performance</option>
+                </select>
+                <select class="filter-select" id="filter-status-q" onchange="filterQualified()">
+                    <option value="">Tous les statuts</option>
+                    <option value="En négociation">En négociation</option>
+                    <option value="Gagné">Gagné</option>
+                    <option value="Perdu">Perdu</option>
+                </select>
+                <button class="btn btn-primary" onclick="openUpgradeModal()">+ Qualifier un prospect</button>
+            </div>
+
+            <div class="table-container">
+                <table class="prospects-table">
+                    <thead>
+                        <tr>
+                            <th>Entreprise</th>
+                            <th>Contact</th>
+                            <th>CA estimé</th>
+                            <th>Budget pub</th>
+                            <th>Offre</th>
+                            <th>Potentiel</th>
+                            <th>Statut</th>
+                            <th>Assigné</th>
+                        </tr>
+                    </thead>
+                    <tbody id="qualified-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Add/Edit Prospect Froid -->
+    <div class="modal-overlay" id="modal-prospect">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Nouveau prospect</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="prospect-id">
+                
+                <div class="form-section">
+                    <div class="form-section-title">Informations entreprise</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Nom entreprise *</label>
+                            <input type="text" class="form-input" id="prospect-company" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Site web</label>
+                            <input type="url" class="form-input" id="prospect-website" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Secteur</label>
+                            <select class="form-select" id="prospect-sector">
+                                <option value="">Sélectionner...</option>
+                                <option value="Mode">Mode</option>
+                                <option value="Beauté">Beauté</option>
+                                <option value="Nutrition">Nutrition</option>
+                                <option value="Maison">Maison</option>
+                                <option value="Pet care">Pet care</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Source</label>
+                            <select class="form-select" id="prospect-source">
+                                <option value="">Sélectionner...</option>
+                                <option value="Ads Library">Ads Library</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                                <option value="Inbound">Inbound</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Contact</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Nom du contact</label>
+                            <input type="text" class="form-input" id="prospect-contact-name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="prospect-email">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">LinkedIn</label>
+                            <input type="url" class="form-input" id="prospect-linkedin" placeholder="https://linkedin.com/in/...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Suivi</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" id="prospect-status">
+                                <option value="nouveau">À contacter</option>
+                                <option value="contacte">Contacté</option>
+                                <option value="repondu">Répondu</option>
+                                <option value="call">Call booké</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assigné à</label>
+                            <select class="form-select" id="prospect-assignee">
+                                <option value="Cyriaque">Cyriaque</option>
+                                <option value="Co-fondateur">Co-fondateur</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de relance</label>
+                            <input type="date" class="form-input" id="prospect-relance">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-textarea" id="prospect-notes" placeholder="Notes internes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-delete" id="btn-delete" onclick="deleteProspect()" style="display: none;">Supprimer</button>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button class="btn btn-primary" onclick="saveProspect()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Qualifier Prospect -->
+    <div class="modal-overlay" id="modal-qualified">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-qualified-title">Qualifier un prospect</h2>
+                <button class="modal-close" onclick="closeQualifiedModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="qualified-id">
+                <input type="hidden" id="qualified-from-prospect">
+
+                <div class="form-section">
+                    <div class="form-section-title">Prospect à qualifier</div>
+                    <div class="form-grid">
+                        <div class="form-group full-width" id="select-prospect-group">
+                            <label class="form-label">Sélectionner un prospect existant</label>
+                            <select class="form-select" id="qualified-prospect-select">
+                                <option value="">Sélectionner...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Entreprise *</label>
+                            <input type="text" class="form-input" id="qualified-company" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact</label>
+                            <input type="text" class="form-input" id="qualified-contact">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Informations business</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">CA estimé</label>
+                            <input type="text" class="form-input" id="qualified-ca" placeholder="ex: 500K€/an">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Budget pub mensuel</label>
+                            <input type="text" class="form-input" id="qualified-budget" placeholder="ex: 10K€/mois">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nb pubs actives</label>
+                            <input type="number" class="form-input" id="qualified-ads-count" placeholder="ex: 15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Potentiel</label>
+                            <select class="form-select" id="qualified-potential">
+                                <option value="Chaud">🔥 Chaud</option>
+                                <option value="Tiède">☀️ Tiède</option>
+                                <option value="Froid">❄️ Froid</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">Offre & Négociation</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Offre recommandée</label>
+                            <select class="form-select" id="qualified-offer">
+                                <option value="">Sélectionner...</option>
+                                <option value="Starter">Offre Starter</option>
+                                <option value="Ads">Offre Ads</option>
+                                <option value="Performance">Offre Performance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" id="qualified-status">
+                                <option value="En négociation">En négociation</option>
+                                <option value="Gagné">✅ Gagné</option>
+                                <option value="Perdu">❌ Perdu</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Proposition envoyée</label>
+                            <select class="form-select" id="qualified-proposal-sent">
+                                <option value="Non">Non</option>
+                                <option value="Oui">Oui</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Montant proposé</label>
+                            <input type="text" class="form-input" id="qualified-proposal-amount" placeholder="ex: 1500€/mois">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assigné à</label>
+                            <select class="form-select" id="qualified-assignee">
+                                <option value="Cyriaque">Cyriaque</option>
+                                <option value="Co-fondateur">Co-fondateur</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Raison si perdu</label>
+                            <input type="text" class="form-input" id="qualified-lost-reason" placeholder="Budget, timing, concurrent...">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Problèmes identifiés</label>
+                            <textarea class="form-textarea" id="qualified-problems" placeholder="Problèmes identifiés lors du call..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-textarea" id="qualified-notes" placeholder="Notes de suivi..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-delete" id="btn-delete-qualified" onclick="deleteQualified()" style="display: none;">Supprimer</button>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="closeQualifiedModal()">Annuler</button>
+                    <button class="btn btn-primary" onclick="saveQualified()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ============================================
+        // DATA STORAGE & API
+        // ============================================
+        
+        let prospects = [];
+        let qualified = [];
+        let config = {
+            apiUrl: '',
+            user1: 'Cyriaque',
+            user2: 'Co-fondateur'
+        };
+
+        // Load config from localStorage
+        function loadConfig() {
+            const saved = localStorage.getItem('kult_crm_config');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('api-url').value = config.apiUrl || '';
+                document.getElementById('user1-name').value = config.user1 || 'Cyriaque';
+                document.getElementById('user2-name').value = config.user2 || 'Co-fondateur';
+                updateAssigneeOptions();
+            }
+        }
+
+        function saveConfig() {
+            config.apiUrl = document.getElementById('api-url').value;
+            localStorage.setItem('kult_crm_config', JSON.stringify(config));
+            showToast('Configuration enregistrée', 'success');
+            refreshData();
+        }
+
+        function saveTeam() {
+            config.user1 = document.getElementById('user1-name').value || 'Cyriaque';
+            config.user2 = document.getElementById('user2-name').value || 'Co-fondateur';
+            localStorage.setItem('kult_crm_config', JSON.stringify(config));
+            updateAssigneeOptions();
+            showToast('Équipe enregistrée', 'success');
+        }
+
+        function updateAssigneeOptions() {
+            const selects = document.querySelectorAll('#prospect-assignee, #qualified-assignee, #filter-assignee');
+            selects.forEach(select => {
+                const currentValue = select.value;
+                if (select.id === 'filter-assignee') {
+                    select.innerHTML = `
+                        <option value="">Tous les assignés</option>
+                        <option value="${config.user1}">${config.user1}</option>
+                        <option value="${config.user2}">${config.user2}</option>
+                    `;
+                } else {
+                    select.innerHTML = `
+                        <option value="${config.user1}">${config.user1}</option>
+                        <option value="${config.user2}">${config.user2}</option>
+                    `;
+                }
+                select.value = currentValue;
+            });
+        }
+
+        // Supabase Config
+        const SUPABASE_URL = 'https://icbvxicwcraoystapvue.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_R0LCODfGtU5tYuqigKhYHw_5Al5HjZN';
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // API Calls via Supabase
+        async function apiCall(action, data = {}) {
+            try {
+                switch (action) {
+                    case 'getProspects':
+                        const { data: prospects, error: pErr } = await db
+                            .from('prospects')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                        if (pErr) throw pErr;
+                        // Map Supabase fields to CRM fields
+                        const mappedProspects = (prospects || []).map(p => ({
+                            id: p.id,
+                            company: p.company || p.name,
+                            contactName: p.contact_name,
+                            email: p.email,
+                            phone: p.phone,
+                            website: p.website,
+                            sector: p.sector,
+                            source: p.source,
+                            status: p.status,
+                            assignee: p.assignee,
+                            relanceDate: p.relance_date,
+                            notes: p.notes,
+                            createdAt: p.created_at,
+                            updatedAt: p.updated_at
+                        }));
+                        return { success: true, data: mappedProspects };
+
+                    case 'getQualified':
+                        const { data: qualified, error: qErr } = await db
+                            .from('qualified')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                        if (qErr) throw qErr;
+                        // Map Supabase fields to CRM fields
+                        const mappedQualified = (qualified || []).map(q => ({
+                            id: q.id,
+                            fromProspectId: q.from_prospect_id,
+                            company: q.company,
+                            contact: q.contact,
+                            ca: q.ca,
+                            budget: q.budget,
+                            adsCount: q.ads_count,
+                            potential: q.potential,
+                            offer: q.offer,
+                            status: q.status,
+                            proposalSent: q.proposal_sent,
+                            proposalAmount: q.proposal_amount,
+                            assignee: q.assignee,
+                            lostReason: q.lost_reason,
+                            problems: q.problems,
+                            notes: q.notes,
+                            createdAt: q.created_at,
+                            updatedAt: q.updated_at
+                        }));
+                        return { success: true, data: mappedQualified };
+
+                    case 'saveProspect':
+                        const prospect = data.prospect;
+                        const prospectData = {
+                            id: prospect.id,
+                            name: prospect.company,
+                            company: prospect.company,
+                            contact_name: prospect.contactName,
+                            email: prospect.email,
+                            phone: prospect.phone,
+                            website: prospect.website,
+                            sector: prospect.sector,
+                            source: prospect.source,
+                            status: prospect.status,
+                            assignee: prospect.assignee,
+                            relance_date: prospect.relanceDate || null,
+                            notes: prospect.notes,
+                            created_at: prospect.createdAt || new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        };
+                        
+                        const { error: saveErr } = await db
+                            .from('prospects')
+                            .upsert(prospectData, { onConflict: 'id' });
+                        
+                        if (saveErr) throw saveErr;
+                        return { success: true };
+
+                    case 'deleteProspect':
+                        const { error: delPErr } = await db.from('prospects').delete().eq('id', data.id);
+                        if (delPErr) throw delPErr;
+                        return { success: true };
+
+                    case 'saveQualified':
+                        const q = data.qualified;
+                        const qualifiedData = {
+                            id: q.id,
+                            from_prospect_id: q.fromProspectId || null,
+                            company: q.company,
+                            contact: q.contact,
+                            ca: q.ca,
+                            budget: q.budget,
+                            ads_count: q.adsCount,
+                            potential: q.potential,
+                            offer: q.offer,
+                            status: q.status,
+                            proposal_sent: q.proposalSent,
+                            proposal_amount: q.proposalAmount,
+                            assignee: q.assignee,
+                            lost_reason: q.lostReason,
+                            problems: q.problems,
+                            notes: q.notes,
+                            created_at: q.createdAt || new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        };
+                        
+                        const { error: saveQErr } = await db
+                            .from('qualified')
+                            .upsert(qualifiedData, { onConflict: 'id' });
+                        
+                        if (saveQErr) throw saveQErr;
+                        return { success: true };
+
+                    case 'deleteQualified':
+                        const { error: delQErr } = await db.from('qualified').delete().eq('id', data.id);
+                        if (delQErr) throw delQErr;
+                        return { success: true };
+
+                    default:
+                        return { success: false };
+                }
+            } catch (error) {
+                console.error('Supabase Error:', error);
+                showToast('Erreur: ' + (error.message || JSON.stringify(error)), 'error');
+                return { success: false, error };
+            }
+        }
+
+        // ============================================
+        // DATA LOADING
+        // ============================================
+
+        async function refreshData() {
+            document.getElementById('sync-text').textContent = 'Synchronisation...';
+            
+            const prospectsResult = await apiCall('getProspects');
+            if (prospectsResult.success) {
+                prospects = prospectsResult.data;
+            }
+
+            const qualifiedResult = await apiCall('getQualified');
+            if (qualifiedResult.success) {
+                qualified = qualifiedResult.data;
+            }
+
+            renderKanban();
+            renderQualifiedTable();
+            updateCounts();
+            
+            document.getElementById('sync-text').textContent = 'Synchronisé';
+        }
+
+        function updateCounts() {
+            document.getElementById('pipeline-count').textContent = prospects.length;
+            document.getElementById('qualified-count').textContent = qualified.length;
+        }
+
+        // ============================================
+        // TABS
+        // ============================================
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+            document.getElementById('pipeline-view').style.display = tab === 'pipeline' ? 'block' : 'none';
+            document.getElementById('qualified-view').style.display = tab === 'qualified' ? 'block' : 'none';
+            document.getElementById('config-view').style.display = tab === 'config' ? 'block' : 'none';
+        }
+
+        // ============================================
+        // KANBAN RENDERING
+        // ============================================
+
+        function renderKanban() {
+            const columns = {
+                'nouveau': 'col-a-contacter',
+                'contacte': 'col-contacte',
+                'repondu': 'col-repondu',
+                'call': 'col-call-booke'
+            };
+
+            // Clear all columns
+            Object.values(columns).forEach(colId => {
+                document.getElementById(colId).innerHTML = '';
+            });
+
+            // Get filter values
+            const search = document.getElementById('search-pipeline').value.toLowerCase();
+            const assigneeFilter = document.getElementById('filter-assignee').value;
+            const sectorFilter = document.getElementById('filter-sector').value;
+
+            // Filter and render
+            const filtered = prospects.filter(p => {
+                const matchSearch = !search || 
+                    p.company?.toLowerCase().includes(search) || 
+                    p.contactName?.toLowerCase().includes(search);
+                const matchAssignee = !assigneeFilter || p.assignee === assigneeFilter;
+                const matchSector = !sectorFilter || p.sector === sectorFilter;
+                return matchSearch && matchAssignee && matchSector;
+            });
+
+            // Count per column
+            const counts = {};
+            Object.keys(columns).forEach(status => counts[status] = 0);
+
+            filtered.forEach(prospect => {
+                const colId = columns[prospect.status];
+                if (colId) {
+                    counts[prospect.status]++;
+                    const card = createProspectCard(prospect);
+                    document.getElementById(colId).appendChild(card);
+                }
+            });
+
+            // Update column counts
+            Object.entries(columns).forEach(([status, colId]) => {
+                const column = document.getElementById(colId).closest('.kanban-column');
+                column.querySelector('.column-count').textContent = counts[status];
+            });
+        }
+
+        function createProspectCard(prospect) {
+            const card = document.createElement('div');
+            card.className = 'prospect-card';
+            card.draggable = true;
+            card.dataset.id = prospect.id;
+
+            const assigneeClass = prospect.assignee === config.user1 ? 'assignee-cyriaque' : 'assignee-cofondateur';
+            const assigneeInitial = prospect.assignee ? prospect.assignee.charAt(0).toUpperCase() : '?';
+
+            const relanceHtml = prospect.relanceDate ? 
+                `<span class="card-relance">⏰ ${formatDate(prospect.relanceDate)}</span>` : 
+                `<span class="card-date">${formatDate(prospect.createdAt)}</span>`;
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-company">${escapeHtml(prospect.company)}</div>
+                    <div class="card-assignee ${assigneeClass}">${assigneeInitial}</div>
+                </div>
+                <div class="card-sector">${prospect.sector || 'Non défini'}</div>
+                <div class="card-footer">
+                    <span class="card-source">${prospect.source || '—'}</span>
+                    ${relanceHtml}
+                </div>
+            `;
+
+            card.addEventListener('click', () => openEditModal(prospect));
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+
+            return card;
+        }
+
+        // ============================================
+        // DRAG & DROP
+        // ============================================
+
+        let draggedCard = null;
+
+        function handleDragStart(e) {
+            draggedCard = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedCard = null;
+        }
+
+        // Setup drop zones
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.column-cards').forEach(column => {
+                column.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                column.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    if (!draggedCard) return;
+
+                    const newStatus = column.closest('.kanban-column').dataset.status;
+                    const prospectId = draggedCard.dataset.id;
+                    
+                    const prospect = prospects.find(p => p.id === prospectId);
+                    if (prospect && prospect.status !== newStatus) {
+                        // Mise à jour instantanée
+                        prospect.status = newStatus;
+                        prospect.updatedAt = new Date().toISOString();
+                        
+                        renderKanban();
+                        showToast(`Déplacé vers "${newStatus}"`, 'success');
+
+                        // Synchro en arrière-plan
+                        apiCall('saveProspect', { prospect }).catch(err => {
+                            console.error('Sync error:', err);
+                        });
+                    }
+                });
+            });
+        });
+
+        // ============================================
+        // QUALIFIED TABLE
+        // ============================================
+
+        function renderQualifiedTable() {
+            const tbody = document.getElementById('qualified-table');
+            tbody.innerHTML = '';
+
+            const search = document.getElementById('search-qualified').value.toLowerCase();
+            const offerFilter = document.getElementById('filter-offer').value;
+            const statusFilter = document.getElementById('filter-status-q').value;
+
+            const filtered = qualified.filter(q => {
+                const matchSearch = !search || 
+                    q.company?.toLowerCase().includes(search) || 
+                    q.contact?.toLowerCase().includes(search);
+                const matchOffer = !offerFilter || q.offer === offerFilter;
+                const matchStatus = !statusFilter || q.status === statusFilter;
+                return matchSearch && matchOffer && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-text">Aucun prospect qualifié</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach(q => {
+                const row = document.createElement('tr');
+                row.onclick = () => openEditQualifiedModal(q);
+
+                const offerClass = q.offer ? `offer-${q.offer.toLowerCase()}` : '';
+                const statusClass = q.status ? `status-${q.status.toLowerCase().replace(' ', '-').replace('é', 'e')}` : '';
+                const potentialClass = q.potential ? `potential-${q.potential.toLowerCase()}` : '';
+
+                row.innerHTML = `
+                    <td><strong>${escapeHtml(q.company)}</strong></td>
+                    <td>${escapeHtml(q.contact || '—')}</td>
+                    <td>${escapeHtml(q.ca || '—')}</td>
+                    <td>${escapeHtml(q.budget || '—')}</td>
+                    <td>${q.offer ? `<span class="card-offer ${offerClass}">${q.offer}</span>` : '—'}</td>
+                    <td>${q.potential ? `<span class="card-potential ${potentialClass}">${q.potential}</span>` : '—'}</td>
+                    <td><span class="status-badge ${statusClass}">${q.status || '—'}</span></td>
+                    <td>${escapeHtml(q.assignee || '—')}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // ============================================
+        // PROSPECT MODAL
+        // ============================================
+
+        function openAddModal() {
+            document.getElementById('modal-title').textContent = 'Nouveau prospect';
+            document.getElementById('prospect-id').value = '';
+            document.getElementById('prospect-company').value = '';
+            document.getElementById('prospect-website').value = '';
+            document.getElementById('prospect-sector').value = '';
+            document.getElementById('prospect-source').value = '';
+            document.getElementById('prospect-contact-name').value = '';
+            document.getElementById('prospect-email').value = '';
+            document.getElementById('prospect-linkedin').value = '';
+            document.getElementById('prospect-status').value = 'nouveau';
+            document.getElementById('prospect-assignee').value = config.user1;
+            document.getElementById('prospect-relance').value = '';
+            document.getElementById('prospect-notes').value = '';
+            document.getElementById('btn-delete').style.display = 'none';
+            
+            document.getElementById('modal-prospect').classList.add('active');
+        }
+
+        function openEditModal(prospect) {
+            document.getElementById('modal-title').textContent = 'Modifier le prospect';
+            document.getElementById('prospect-id').value = prospect.id;
+            document.getElementById('prospect-company').value = prospect.company || '';
+            document.getElementById('prospect-website').value = prospect.website || '';
+            document.getElementById('prospect-sector').value = prospect.sector || '';
+            document.getElementById('prospect-source').value = prospect.source || '';
+            document.getElementById('prospect-contact-name').value = prospect.contactName || '';
+            document.getElementById('prospect-email').value = prospect.email || '';
+            document.getElementById('prospect-linkedin').value = prospect.linkedin || '';
+            document.getElementById('prospect-status').value = prospect.status || 'nouveau';
+            document.getElementById('prospect-assignee').value = prospect.assignee || config.user1;
+            document.getElementById('prospect-relance').value = prospect.relanceDate || '';
+            document.getElementById('prospect-notes').value = prospect.notes || '';
+            document.getElementById('btn-delete').style.display = 'block';
+            
+            document.getElementById('modal-prospect').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-prospect').classList.remove('active');
+        }
+
+        async function saveProspect() {
+            const id = document.getElementById('prospect-id').value || generateId();
+            const company = document.getElementById('prospect-company').value.trim();
+
+            if (!company) {
+                showToast('Le nom de l\'entreprise est requis', 'error');
+                return;
+            }
+
+            const prospect = {
+                id,
+                company,
+                website: document.getElementById('prospect-website').value.trim(),
+                sector: document.getElementById('prospect-sector').value,
+                source: document.getElementById('prospect-source').value,
+                contactName: document.getElementById('prospect-contact-name').value.trim(),
+                email: document.getElementById('prospect-email').value.trim(),
+                linkedin: document.getElementById('prospect-linkedin').value.trim(),
+                status: document.getElementById('prospect-status').value,
+                assignee: document.getElementById('prospect-assignee').value,
+                relanceDate: document.getElementById('prospect-relance').value,
+                notes: document.getElementById('prospect-notes').value.trim(),
+                createdAt: prospects.find(p => p.id === id)?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            // Mise à jour instantanée (optimistic update)
+            const index = prospects.findIndex(p => p.id === id);
+            if (index >= 0) {
+                prospects[index] = prospect;
+            } else {
+                prospects.push(prospect);
+            }
+
+            closeModal();
+            renderKanban();
+            updateCounts();
+            showToast('Prospect enregistré', 'success');
+
+            // Synchro en arrière-plan
+            apiCall('saveProspect', { prospect }).catch(err => {
+                console.error('Sync error:', err);
+            });
+        }
+
+        async function deleteProspect() {
+            const id = document.getElementById('prospect-id').value;
+            if (!id) return;
+
+            if (!confirm('Supprimer ce prospect ?')) return;
+
+            // Mise à jour instantanée
+            prospects = prospects.filter(p => p.id !== id);
+            
+            closeModal();
+            renderKanban();
+            updateCounts();
+            showToast('Prospect supprimé', 'success');
+
+            // Synchro en arrière-plan
+            apiCall('deleteProspect', { id }).catch(err => {
+                console.error('Sync error:', err);
+            });
+        }
+
+        // ============================================
+        // QUALIFIED MODAL
+        // ============================================
+
+        function openUpgradeModal() {
+            document.getElementById('modal-qualified-title').textContent = 'Qualifier un prospect';
+            document.getElementById('qualified-id').value = '';
+            document.getElementById('qualified-from-prospect').value = '';
+            document.getElementById('select-prospect-group').style.display = 'block';
+            
+            // Populate dropdown with prospects that have "call" status
+            const select = document.getElementById('qualified-prospect-select');
+            select.innerHTML = '<option value="">Sélectionner un prospect...</option>';
+            prospects
+                .filter(p => p.status === 'call')
+                .forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${escapeHtml(p.company)}</option>`;
+                });
+
+            // Clear form
+            document.getElementById('qualified-company').value = '';
+            document.getElementById('qualified-contact').value = '';
+            document.getElementById('qualified-ca').value = '';
+            document.getElementById('qualified-budget').value = '';
+            document.getElementById('qualified-ads-count').value = '';
+            document.getElementById('qualified-potential').value = 'Tiède';
+            document.getElementById('qualified-offer').value = '';
+            document.getElementById('qualified-status').value = 'En négociation';
+            document.getElementById('qualified-proposal-sent').value = 'Non';
+            document.getElementById('qualified-proposal-amount').value = '';
+            document.getElementById('qualified-assignee').value = config.user1;
+            document.getElementById('qualified-lost-reason').value = '';
+            document.getElementById('qualified-problems').value = '';
+            document.getElementById('qualified-notes').value = '';
+            document.getElementById('btn-delete-qualified').style.display = 'none';
+
+            document.getElementById('modal-qualified').classList.add('active');
+        }
+
+        // Auto-fill when selecting a prospect
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('qualified-prospect-select').addEventListener('change', function() {
+                const prospectId = this.value;
+                if (!prospectId) return;
+
+                const prospect = prospects.find(p => p.id === prospectId);
+                if (prospect) {
+                    document.getElementById('qualified-from-prospect').value = prospectId;
+                    document.getElementById('qualified-company').value = prospect.company || '';
+                    document.getElementById('qualified-contact').value = prospect.contactName || '';
+                    document.getElementById('qualified-assignee').value = prospect.assignee || config.user1;
+                }
+            });
+        });
+
+        function openEditQualifiedModal(q) {
+            document.getElementById('modal-qualified-title').textContent = 'Modifier le prospect qualifié';
+            document.getElementById('qualified-id').value = q.id;
+            document.getElementById('qualified-from-prospect').value = q.fromProspectId || '';
+            document.getElementById('select-prospect-group').style.display = 'none';
+            
+            document.getElementById('qualified-company').value = q.company || '';
+            document.getElementById('qualified-contact').value = q.contact || '';
+            document.getElementById('qualified-ca').value = q.ca || '';
+            document.getElementById('qualified-budget').value = q.budget || '';
+            document.getElementById('qualified-ads-count').value = q.adsCount || '';
+            document.getElementById('qualified-potential').value = q.potential || 'Tiède';
+            document.getElementById('qualified-offer').value = q.offer || '';
+            document.getElementById('qualified-status').value = q.status || 'En négociation';
+            document.getElementById('qualified-proposal-sent').value = q.proposalSent || 'Non';
+            document.getElementById('qualified-proposal-amount').value = q.proposalAmount || '';
+            document.getElementById('qualified-assignee').value = q.assignee || config.user1;
+            document.getElementById('qualified-lost-reason').value = q.lostReason || '';
+            document.getElementById('qualified-problems').value = q.problems || '';
+            document.getElementById('qualified-notes').value = q.notes || '';
+            document.getElementById('btn-delete-qualified').style.display = 'block';
+
+            document.getElementById('modal-qualified').classList.add('active');
+        }
+
+        function closeQualifiedModal() {
+            document.getElementById('modal-qualified').classList.remove('active');
+        }
+
+        async function saveQualified() {
+            const id = document.getElementById('qualified-id').value || generateId();
+            const company = document.getElementById('qualified-company').value.trim();
+
+            if (!company) {
+                showToast('Le nom de l\'entreprise est requis', 'error');
+                return;
+            }
+
+            const qualifiedData = {
+                id,
+                fromProspectId: document.getElementById('qualified-from-prospect').value,
+                company,
+                contact: document.getElementById('qualified-contact').value.trim(),
+                ca: document.getElementById('qualified-ca').value.trim(),
+                budget: document.getElementById('qualified-budget').value.trim(),
+                adsCount: document.getElementById('qualified-ads-count').value,
+                potential: document.getElementById('qualified-potential').value,
+                offer: document.getElementById('qualified-offer').value,
+                status: document.getElementById('qualified-status').value,
+                proposalSent: document.getElementById('qualified-proposal-sent').value,
+                proposalAmount: document.getElementById('qualified-proposal-amount').value.trim(),
+                assignee: document.getElementById('qualified-assignee').value,
+                lostReason: document.getElementById('qualified-lost-reason').value.trim(),
+                problems: document.getElementById('qualified-problems').value.trim(),
+                notes: document.getElementById('qualified-notes').value.trim(),
+                createdAt: qualified.find(q => q.id === id)?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            // Mise à jour instantanée
+            const index = qualified.findIndex(q => q.id === id);
+            if (index >= 0) {
+                qualified[index] = qualifiedData;
+            } else {
+                qualified.push(qualifiedData);
+            }
+
+            // Remove from pipeline if came from there
+            let prospectToDelete = null;
+            if (qualifiedData.fromProspectId) {
+                const prospectIndex = prospects.findIndex(p => p.id === qualifiedData.fromProspectId);
+                if (prospectIndex >= 0) {
+                    prospectToDelete = qualifiedData.fromProspectId;
+                    prospects.splice(prospectIndex, 1);
+                    renderKanban();
+                }
+            }
+
+            closeQualifiedModal();
+            renderQualifiedTable();
+            updateCounts();
+            showToast('Prospect qualifié enregistré', 'success');
+
+            // Synchro en arrière-plan
+            apiCall('saveQualified', { qualified: qualifiedData }).catch(err => {
+                console.error('Sync error:', err);
+            });
+            
+            if (prospectToDelete) {
+                apiCall('deleteProspect', { id: prospectToDelete }).catch(err => {
+                    console.error('Sync error:', err);
+                });
+            }
+        }
+
+        async function deleteQualified() {
+            const id = document.getElementById('qualified-id').value;
+            if (!id) return;
+
+            if (!confirm('Supprimer ce prospect qualifié ?')) return;
+
+            // Mise à jour instantanée
+            qualified = qualified.filter(q => q.id !== id);
+            
+            closeQualifiedModal();
+            renderQualifiedTable();
+            updateCounts();
+            showToast('Prospect qualifié supprimé', 'success');
+
+            // Synchro en arrière-plan
+            apiCall('deleteQualified', { id }).catch(err => {
+                console.error('Sync error:', err);
+            });
+        }
+
+        // ============================================
+        // FILTERS
+        // ============================================
+
+        function filterProspects() {
+            renderKanban();
+        }
+
+        function filterQualified() {
+            renderQualifiedTable();
+        }
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+
+        function generateId() {
+            // Generate a valid UUID v4
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✓' : '⚠'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            refreshData();
+        });
+
+        // Close modals on escape
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeQualifiedModal();
+            }
+        });
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) {
+                    closeModal();
+                    closeQualifiedModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

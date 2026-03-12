@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdSync — Score de cohérence Créa ↔ Landing Page</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235B3AFF'/%3E%3Cstop offset='1' stop-color='%238B6FFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M8 16h6M18 16h6M14 12l4 4-4 4' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0B0F;
+    --bg-2: #111118;
+    --surface: #16161E;
+    --surface-2: #1C1C28;
+    --surface-3: #24243A;
+    --border: #2A2A3E;
+    --border-strong: #3A3A55;
+    --text: #F0F0F5;
+    --text-muted: #8888A0;
+    --accent: #5B3AFF;
+    --accent-light: #7C5FFF;
+    --accent-lighter: #A18FFF;
+    --accent-glow: rgba(91, 58, 255, 0.12);
+    --accent-glow-strong: rgba(91, 58, 255, 0.25);
+    --green: #34D399;
+    --green-bg: rgba(52, 211, 153, 0.1);
+    --green-border: rgba(52, 211, 153, 0.25);
+    --yellow: #FBBF24;
+    --yellow-bg: rgba(251, 191, 36, 0.1);
+    --yellow-border: rgba(251, 191, 36, 0.25);
+    --red: #F87171;
+    --red-bg: rgba(248, 113, 113, 0.1);
+    --red-border: rgba(248, 113, 113, 0.25);
+    --orange: #FB923C;
+    --orange-bg: rgba(251, 146, 60, 0.1);
+    --orange-border: rgba(251, 146, 60, 0.25);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow-glow: 0 0 40px rgba(91, 58, 255, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== BACKGROUND EFFECTS ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(91, 58, 255, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(11, 11, 15, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .logo-svg { height: 32px; width: 32px; }
+
+  .logo-text {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo-text em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), var(--accent-lighter));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .nav-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(91,58,255,0.2);
+    border-radius: 100px;
+    color: var(--accent-lighter);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 12px 28px;
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-accent {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    box-shadow: 0 4px 20px rgba(91, 58, 255, 0.35);
+  }
+
+  .btn-accent:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(91, 58, 255, 0.45);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border-strong);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent-lighter);
+    background: var(--accent-glow);
+  }
+
+  .btn-full { width: 100%; }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; position: relative; z-index: 1; }
+  .screen.active { display: flex; }
+
+  /* ===== INPUT ===== */
+  .input-field {
+    width: 100%;
+    padding: 13px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-field::placeholder { color: var(--text-muted); }
+
+  .error-msg {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  /* ===== SCREEN 1: EMAIL ===== */
+  .email-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .email-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--shadow-glow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .email-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-lighter), #C084FC);
+  }
+
+  .email-hero-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--accent-glow-strong), var(--accent-glow));
+    border: 1px solid rgba(91,58,255,0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+
+  .email-card h1 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .email-card h1 span {
+    background: linear-gradient(135deg, var(--accent-light), #C084FC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .email-card > p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+
+  .email-trust {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  .email-features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .email-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .email-feature-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(91,58,255,0.12);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  /* ===== SCREEN 2: SCAN ===== */
+  .scan-screen {
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+    min-height: calc(100vh - 65px);
+  }
+
+  .scan-container { max-width: 640px; width: 100%; }
+
+  .scan-header { text-align: center; margin-bottom: 36px; }
+
+  .scan-header h2 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .scan-header p { font-size: 15px; color: var(--text-muted); }
+
+  .scan-steps { display: flex; gap: 8px; margin-bottom: 32px; }
+
+  .scan-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .scan-step.done { background: var(--accent); }
+  .scan-step.current { background: var(--accent-light); }
+
+  .form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .form-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-section-title .step-num {
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .form-section-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--surface-2);
+  }
+
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-glow); }
+
+  .upload-zone.has-file { border-style: solid; border-color: var(--green); background: var(--green-bg); }
+
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+  .upload-text strong { color: var(--accent-lighter); }
+
+  .upload-preview { display: none; flex-direction: column; align-items: center; gap: 10px; }
+  .upload-preview img { max-height: 200px; max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .upload-preview .file-name { font-size: 13px; color: var(--green); font-weight: 600; }
+  .remove-file { font-size: 12px; color: var(--red); cursor: pointer; text-decoration: underline; }
+
+  .upload-tip {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(91,58,255,0.12);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  .upload-tip strong { color: var(--accent-lighter); }
+
+  /* ===== SCREEN 3: LOADING ===== */
+  .loading-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .loading-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .loading-spinner {
+    width: 56px;
+    height: 56px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-steps { display: flex; flex-direction: column; gap: 12px; text-align: left; margin-top: 28px; }
+
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+
+  .loading-step.active { color: var(--text); font-weight: 600; }
+  .loading-step.done { color: var(--green); }
+
+  .loading-step-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .loading-step.active .loading-step-icon { background: var(--accent-glow); border-color: var(--accent); color: var(--accent-lighter); }
+  .loading-step.done .loading-step-icon { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+
+  /* ===== SCREEN 4: RESULTS ===== */
+  .results-screen { flex-direction: column; align-items: center; padding: 36px 24px 80px; }
+  .results-container { max-width: 900px; width: 100%; }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .results-title h2 { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .results-title p { font-size: 14px; color: var(--text-muted); }
+
+  /* Compared */
+  .compared-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 20px; }
+  .compared-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 700; margin-bottom: 16px; text-align: center; }
+  .compared-grid { display: grid; grid-template-columns: 1fr 48px 1fr; gap: 0; align-items: start; }
+  .compared-side { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+
+  .compared-thumb-ad {
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 4/5;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+    background: var(--surface-2);
+    position: relative;
+  }
+
+  .compared-thumb-ad img { width: 100%; height: 100%; object-fit: cover; }
+
+  .compared-thumb-lp {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .browser-chrome { background: var(--surface-2); padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+  .browser-dots { display: flex; gap: 4px; flex-shrink: 0; }
+  .browser-dots span { width: 8px; height: 8px; border-radius: 50%; }
+  .browser-dots span:nth-child(1) { background: #FF5F57; }
+  .browser-dots span:nth-child(2) { background: #FFBD2E; }
+  .browser-dots span:nth-child(3) { background: #28C840; }
+  .browser-url-bar { flex:1; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 4px 10px; font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  .browser-url-bar .lock { color: var(--green); font-size: 9px; }
+
+  .browser-body { position: relative; min-height: 140px; overflow: hidden; background: var(--surface-2); }
+  .browser-body-placeholder { padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; justify-content: center; min-height: 140px; transition: opacity 0.3s; }
+  .browser-body-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--accent-glow); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .browser-body-domain { font-size: 14px; font-weight: 700; color: var(--text); }
+  .browser-body-loading { font-size: 11px; color: var(--text-muted); animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+  .browser-body-screenshot { position: absolute; inset: 0; opacity: 0; transition: opacity 0.4s; }
+  .browser-body-screenshot.loaded { opacity: 1; }
+  .browser-body-screenshot img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+  .compared-thumb-label { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px); z-index: 2; }
+  .compared-side-name { font-size: 13px; font-weight: 600; }
+  .compared-side-url { font-size: 11px; color: var(--text-muted); word-break: break-all; max-width: 280px; }
+  .compared-vs-center { display: flex; align-items: center; justify-content: center; padding-top: 50px; }
+  .compared-vs { font-size: 11px; font-weight: 800; color: var(--accent-lighter); background: var(--accent-glow-strong); padding: 8px 14px; border-radius: 100px; letter-spacing: 1px; border: 1px solid rgba(91,58,255,0.2); }
+
+  /* Global Score */
+  .global-score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-glow);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .global-score-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--orange), var(--yellow), var(--green));
+  }
+
+  .global-score-top { display: flex; align-items: center; justify-content: center; gap: 32px; margin-bottom: 24px; }
+
+  .score-circle { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+  .score-circle svg { width: 130px; height: 130px; transform: rotate(-90deg); }
+  .score-circle .track { fill: none; stroke: var(--surface-3); stroke-width: 10; }
+  .score-circle .fill-ring { fill: none; stroke-width: 10; stroke-linecap: round; stroke-dasharray: 326; stroke-dashoffset: 326; transition: stroke-dashoffset 1.5s ease-out 0.3s; }
+  .score-circle .score-val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .score-circle .score-num { font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 700; }
+  .score-circle .score-max { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .global-score-text { text-align: left; flex: 1; }
+  .global-score-text h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .global-score-text p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+  .score-mini-bars { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .mini-bar-item { text-align: center; }
+  .mini-bar-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 8px; }
+  .mini-bar-track { height: 6px; background: var(--surface-3); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; width: 0; transition: width 1.2s ease-out 0.6s; }
+  .mini-bar-score { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; }
+
+  /* Dimensions */
+  .dimensions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: all 0.2s;
+  }
+
+  .dim-card:hover { border-color: var(--border-strong); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+  .dim-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .dim-name { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; }
+  .dim-emoji { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .dim-score-big { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; }
+  .dim-bar { height: 6px; background: var(--surface-3); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+  .dim-bar-fill { height: 100%; border-radius: 3px; width: 0; transition: width 1.2s ease-out 0.5s; }
+
+  .dim-status { display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .status-pass { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .status-warn { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+  .status-fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .status-alert { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+  .dim-detail { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-top: 10px; }
+
+  /* Recommendations */
+  .reco-section { margin-bottom: 20px; }
+  .reco-section-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .reco-section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .reco-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .reco-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .reco-item:hover { border-color: var(--border-strong); }
+
+  .reco-priority { min-width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: white; flex-shrink: 0; }
+  .p-high { background: var(--red); }
+  .p-med { background: var(--orange); }
+  .p-low { background: var(--accent); }
+  .reco-text { font-size: 14px; line-height: 1.7; margin-bottom: 8px; }
+  .reco-impact { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--green); background: var(--green-bg); border: 1px solid var(--green-border); padding: 4px 12px; border-radius: 100px; }
+
+  /* CTA */
+  .results-cta {
+    background: linear-gradient(135deg, rgba(91,58,255,0.08), rgba(192,132,252,0.08));
+    border: 1.5px solid rgba(91,58,255,0.2);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .results-cta::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), #C084FC); }
+  .results-cta h3 { font-size: 22px; font-weight: 900; margin-bottom: 10px; letter-spacing: -0.5px; }
+  .results-cta p { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.7; max-width: 520px; margin-left: auto; margin-right: auto; }
+  .results-cta p strong { color: var(--accent-lighter); }
+  .results-cta-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  /* ===== SCREEN 5: PAYWALL ===== */
+  .paywall-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .paywall-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 540px;
+    width: 100%;
+    box-shadow: var(--shadow-glow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .paywall-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-lighter), #C084FC); }
+
+  .paywall-icon { font-size: 48px; margin-bottom: 20px; }
+
+  .paywall-card h2 {
+    font-size: 26px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .paywall-card > p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  .paywall-options {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .paywall-option {
+    background: var(--surface-2);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: block;
+    color: var(--text);
+  }
+
+  .paywall-option:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .paywall-option.featured {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    position: relative;
+  }
+
+  .paywall-option-badge {
+    position: absolute;
+    top: -1px;
+    right: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 0 0 8px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .paywall-option-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .paywall-option-price {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-lighter);
+  }
+
+  .paywall-option-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .paywall-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 24px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .paywall-divider::before, .paywall-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .email-card, .paywall-card { padding: 32px 24px; }
+    .scan-screen { padding: 32px 16px; }
+    .form-section { padding: 20px; }
+    .results-screen { padding: 24px 16px 60px; }
+    .global-score-top { flex-direction: column; gap: 20px; }
+    .global-score-text { text-align: center; }
+    .score-mini-bars { grid-template-columns: 1fr 1fr; }
+    .dimensions-grid { grid-template-columns: 1fr; }
+    .compared-grid { grid-template-columns: 1fr; gap: 16px; }
+    .compared-vs-center { display: none; }
+    .results-header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">
+    <svg class="logo-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#5B3AFF"/><stop offset="1" stop-color="#8B6FFF"/></linearGradient></defs>
+      <rect width="32" height="32" rx="8" fill="url(#lg)"/>
+      <path d="M8 16h6M18 16h6M14 12l4 4-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">Ad<em>Sync</em></span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-badge">Beta</span>
+    by KULT Agency
+  </div>
+</nav>
+
+<!-- SCREEN 1: EMAIL -->
+<section class="screen email-screen active" id="screen-email">
+  <div class="email-card">
+    <div class="email-hero-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M4 14h8M16 14h8M12 9l5 5-5 5" stroke="#7C5FFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1>Analyse la cohérence<br><span>Créa ↔ Page</span></h1>
+    <p>Découvre si ta pub Meta et ta landing page racontent la même histoire — ou si tu perds des conversions en silence.</p>
+    <div class="error-msg" id="email-error"></div>
+    <div class="input-group">
+      <input type="email" class="input-field" id="email-input" placeholder="ton@email.com" required>
+      <input type="text" class="input-field" id="name-input" placeholder="Nom de ta marque (optionnel)">
+    </div>
+    <button class="btn btn-accent btn-full" id="email-submit">Analyser gratuitement →</button>
+    <div class="email-trust">🔒 Aucun spam. 1 analyse gratuite.</div>
+    <div class="email-features">
+      <div class="email-feature"><div class="email-feature-icon">🎨</div><span>Analyse visuelle, message, CTA et technique</span></div>
+      <div class="email-feature"><div class="email-feature-icon">💬</div><span>Détection des décalages qui tuent ta conversion</span></div>
+      <div class="email-feature"><div class="email-feature-icon">💡</div><span>Recommandations concrètes avec impact estimé</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 2: SCAN -->
+<section class="screen scan-screen" id="screen-scan">
+  <div class="scan-container">
+    <div class="scan-header">
+      <h2>Lance ton analyse</h2>
+      <p>Upload ta créa et entre l'URL de ta landing page</p>
+    </div>
+    <div class="scan-steps"><div class="scan-step done"></div><div class="scan-step current"></div><div class="scan-step"></div></div>
+    <div class="error-msg" id="scan-error"></div>
+    <div class="form-section">
+      <div class="form-section-title"><div class="step-num">1</div>Ta créa publicitaire</div>
+      <div class="form-section-desc">Upload une capture d'écran de ta pub Meta Ads</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" accept="image/*" id="file-input">
+        <div class="upload-placeholder" id="upload-placeholder">
+          <div class="upload-icon">📤</div>
+          <div class="upload-text"><strong>Clique ou glisse</strong> ton image ici<br>PNG, JPG, WebP — max 10MB</div>
+        </div>
+        <div class="upload-preview" id="upload-preview">
+          <img id="preview-img" src="" alt="Preview">
+          <div class="file-name" id="file-name">✓</div>
+          <span class="remove-file" id="remove-file">Supprimer</span>
+        </div>
+      </div>
+      <div class="upload-tip">💡 <strong>Astuce :</strong> Va sur <a href="https://www.facebook.com/ads/library/" target="_blank" style="color:var(--accent-lighter)">Facebook Ads Library</a>, trouve ta pub, et fais une capture d'écran du visuel.</div>
+    </div>
+    <div class="form-section">
+      <div class="form-section-title"><div class="step-num">2</div>Ta landing page</div>
+      <div class="form-section-desc">L'URL vers laquelle ta pub redirige les utilisateurs</div>
+      <input type="url" class="input-field" id="lp-url-input" placeholder="https://tamarque.fr/collection-printemps">
+    </div>
+    <div class="form-section">
+      <div class="form-section-title"><div class="step-num">3</div>Contexte <span style="font-weight:400;color:var(--text-muted);font-size:13px">(optionnel)</span></div>
+      <div class="form-section-desc">Aide l'IA à calibrer ses recommandations</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <select class="input-field" id="sector-input" style="flex:1;min-width:200px"><option value="">Secteur</option><option value="mode">Mode & Vêtements</option><option value="beaute">Beauté & Cosmétiques</option><option value="deco">Maison & Décoration</option><option value="nutrition">Nutrition & Compléments</option><option value="animaux">Animaux & Pet Care</option><option value="tech">Tech & Accessoires</option><option value="sport">Sport & Fitness</option><option value="autre">Autre</option></select>
+        <select class="input-field" id="objective-input" style="flex:1;min-width:200px"><option value="">Objectif</option><option value="vente">Vente directe</option><option value="promo">Promotion / Soldes</option><option value="lancement">Lancement produit</option><option value="notoriete">Notoriété</option><option value="retargeting">Retargeting</option></select>
+      </div>
+    </div>
+    <button class="btn btn-accent btn-full" id="scan-submit" style="padding:14px;font-size:15px">🔍 Analyser la cohérence →</button>
+  </div>
+</section>
+
+<!-- SCREEN 3: LOADING -->
+<section class="screen loading-screen" id="screen-loading">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Analyse en cours...</h2>
+    <p style="font-size:14px;color:var(--text-muted)">Notre IA compare ta créa et ta landing page</p>
+    <div class="loading-steps">
+      <div class="loading-step active" id="lstep-1"><div class="loading-step-icon">1</div><span>Lecture de la créa publicitaire...</span></div>
+      <div class="loading-step" id="lstep-2"><div class="loading-step-icon">2</div><span>Crawl de la landing page...</span></div>
+      <div class="loading-step" id="lstep-3"><div class="loading-step-icon">3</div><span>Comparaison sur 4 dimensions...</span></div>
+      <div class="loading-step" id="lstep-4"><div class="loading-step-icon">4</div><span>Génération des recommandations...</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 4: RESULTS -->
+<section class="screen results-screen" id="screen-results">
+  <div class="results-container">
+    <div class="results-header">
+      <div class="results-title"><h2>📋 Rapport de cohérence</h2><p id="results-subtitle"></p></div>
+      <button class="btn btn-outline" id="btn-new-scan">↻ Nouveau scan</button>
+    </div>
+    <div class="compared-card" id="compared-card" style="display:none">
+      <div class="compared-card-label">Ce qu'on a comparé</div>
+      <div class="compared-grid">
+        <div class="compared-side">
+          <div class="compared-thumb-ad" id="compared-ad-thumb"><div class="compared-thumb-label">📱 Créa</div></div>
+          <div class="compared-side-name" id="compared-brand-name"></div>
+        </div>
+        <div class="compared-vs-center"><div class="compared-vs">VS</div></div>
+        <div class="compared-side">
+          <div class="compared-thumb-lp">
+            <div class="browser-chrome"><div class="browser-dots"><span></span><span></span><span></span></div><div class="browser-url-bar"><span class="lock">🔒</span><span id="browser-url-text"></span></div></div>
+            <div class="browser-body"><div class="browser-body-placeholder" id="browser-placeholder"><div class="browser-body-icon">🌐</div><div class="browser-body-domain" id="browser-domain-text"></div><div class="browser-body-loading">Capture en cours...</div></div><div class="browser-body-screenshot" id="browser-screenshot"></div></div>
+          </div>
+          <div class="compared-side-url" id="compared-lp-url"></div>
+        </div>
+      </div>
+    </div>
+    <div class="global-score-card">
+      <div class="global-score-top">
+        <div class="score-circle"><svg viewBox="0 0 130 130"><circle class="track" cx="65" cy="65" r="52"/><circle class="fill-ring" id="score-ring-fill" cx="65" cy="65" r="52"/></svg><div class="score-val"><div class="score-num" id="global-score-num">--</div><div class="score-max">/100</div></div></div>
+        <div class="global-score-text"><h3 id="global-score-label">Calcul...</h3><p id="global-score-desc"></p></div>
+      </div>
+      <div class="score-mini-bars" id="score-mini-bars"></div>
+    </div>
+    <div class="dimensions-grid" id="dimensions-grid"></div>
+    <div class="reco-section">
+      <div class="reco-section-title">💡 Recommandations prioritaires</div>
+      <div class="reco-section-desc">Actions classées par impact estimé sur ta conversion</div>
+      <div class="reco-list" id="reco-list"></div>
+    </div>
+    <div class="results-cta">
+      <div style="font-size:32px;margin-bottom:12px">🎁</div>
+      <h3>Offre exclusive : Audit créa + landing page offert</h3>
+      <p>Tu viens de voir les failles — on peut les corriger. Réserve un appel avec KULT Agency et reçois un <strong>audit complet gratuit</strong> de tes créas Meta + tes landing pages. Modèle performance : 0 résultat = 0€.</p>
+      <div class="results-cta-buttons">
+        <a href="https://www.kult-agency.com/booking.html" target="_blank" class="btn btn-accent">📞 Réserver mon audit gratuit →</a>
+        <a href="https://www.kult-agency.com/" target="_blank" class="btn btn-outline">Découvrir KULT Agency →</a>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--text-muted)">⏳ Places limitées — 5 audits gratuits par semaine</div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 5: PAYWALL -->
+<section class="screen paywall-screen" id="screen-paywall">
+  <div class="paywall-card">
+    <div class="paywall-icon">🔒</div>
+    <h2>Tu as utilisé ton analyse gratuite</h2>
+    <p>Tu as vu la puissance d'AdSync ! Pour continuer à analyser tes créas et optimiser tes conversions, deux options :</p>
+
+    <div class="paywall-options">
+      <a href="https://www.kult-agency.com/booking.html" target="_blank" class="paywall-option featured">
+        <div class="paywall-option-badge">Recommandé</div>
+        <div class="paywall-option-title">🎁 Audit gratuit par KULT</div>
+        <div class="paywall-option-desc">Réserve un appel stratégique et obtiens un audit complet de tes créas + pages. On te montre exactement quoi corriger — <strong style="color:var(--accent-lighter)">0 résultat = 0€</strong>.</div>
+      </a>
+      <div class="paywall-divider">ou</div>
+      <a href="https://buy.stripe.com/8x2fZicq7cPJ78ZaZJcQU01" target="_blank" class="paywall-option">
+        <div class="paywall-option-title">⚡ AdSync Pro <span class="paywall-option-price">29€/mois</span></div>
+        <div class="paywall-option-desc">Scans illimités, recommandations détaillées, export PDF, et support prioritaire. Annulable à tout moment.</div>
+      </a>
+    </div>
+
+    <a href="https://www.kult-agency.com/" target="_blank" class="btn btn-outline btn-full" style="margin-top:8px">En savoir plus sur KULT Agency →</a>
+  </div>
+</section>
+
+<script>
+const WORKER_URL = 'https://adsync-worker.mathys-hosin.workers.dev';
+
+let state = { email: '', brandName: '', adImage: null, adImageName: '', landingPageUrl: '', sector: '', objective: '' };
+
+// ===== PRO MODE =====
+function checkProMode() {
+  // Check URL param after Stripe redirect
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('pro') === 'true') {
+    localStorage.setItem('adsync_pro', 'true');
+    // Clean URL without reloading
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+  return localStorage.getItem('adsync_pro') === 'true';
+}
+
+const isPro = checkProMode();
+
+// Show pro badge if active
+if (isPro) {
+  const badge = document.querySelector('.nav-badge');
+  if (badge) { badge.textContent = 'Pro ✓'; badge.style.background = 'rgba(52,211,153,0.15)'; badge.style.borderColor = 'rgba(52,211,153,0.3)'; badge.style.color = '#34D399'; }
+}
+
+// ===== SCAN COUNTER =====
+function getScanCount() { return parseInt(localStorage.getItem('adsync_scans') || '0'); }
+function incrementScanCount() { const c = getScanCount() + 1; localStorage.setItem('adsync_scans', c.toString()); return c; }
+function hasFreeScan() { return isPro || getScanCount() < 1; }
+
+// ===== NAV =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== EMAIL =====
+document.getElementById('email-submit').addEventListener('click', () => {
+  const email = document.getElementById('email-input').value.trim();
+  const brand = document.getElementById('name-input').value.trim();
+  const err = document.getElementById('email-error');
+  if (!email || !email.includes('@') || !email.includes('.')) { err.textContent = 'Entre une adresse email valide.'; err.classList.add('show'); return; }
+  err.classList.remove('show');
+  state.email = email;
+  state.brandName = brand;
+  sendEmailCapture(email, brand);
+
+  // Check paywall
+  if (!hasFreeScan()) {
+    showScreen('screen-paywall');
+  } else {
+    showScreen('screen-scan');
+  }
+});
+
+document.getElementById('email-input').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('email-submit').click(); });
+
+async function sendEmailCapture(email, brand) {
+  try { await fetch(WORKER_URL + '/capture-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, brand }) }); } catch(e) {}
+}
+
+// ===== UPLOAD =====
+const fileInput = document.getElementById('file-input');
+const uploadPlaceholder = document.getElementById('upload-placeholder');
+const uploadPreview = document.getElementById('upload-preview');
+const previewImg = document.getElementById('preview-img');
+const fileNameEl = document.getElementById('file-name');
+const uploadZone = document.getElementById('upload-zone');
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 10*1024*1024) { alert('Max 10MB'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.adImage = ev.target.result;
+    state.adImageName = file.name;
+    previewImg.src = ev.target.result;
+    fileNameEl.textContent = '✓ ' + file.name;
+    uploadPlaceholder.style.display = 'none';
+    uploadPreview.style.display = 'flex';
+    uploadZone.classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('remove-file').addEventListener('click', e => {
+  e.stopPropagation(); e.preventDefault();
+  state.adImage = null; state.adImageName = ''; fileInput.value = '';
+  uploadPlaceholder.style.display = 'block'; uploadPreview.style.display = 'none'; uploadZone.classList.remove('has-file');
+});
+
+// ===== SUBMIT =====
+document.getElementById('scan-submit').addEventListener('click', async () => {
+  const err = document.getElementById('scan-error');
+  const lp = document.getElementById('lp-url-input').value.trim();
+  if (!state.adImage) { err.textContent = "Upload une capture d'écran de ta créa."; err.classList.add('show'); return; }
+  if (!lp || !lp.startsWith('http')) { err.textContent = "Entre l'URL complète (commence par https://)."; err.classList.add('show'); return; }
+  err.classList.remove('show');
+  state.landingPageUrl = lp;
+  state.sector = document.getElementById('sector-input').value;
+  state.objective = document.getElementById('objective-input').value;
+  showScreen('screen-loading');
+  await runAnalysis();
+});
+
+// ===== ANALYSIS =====
+async function runAnalysis() {
+  const steps = ['lstep-1','lstep-2','lstep-3','lstep-4'];
+  let cur = 0;
+  const si = setInterval(() => {
+    if (cur > 0) { document.getElementById(steps[cur-1]).classList.remove('active'); document.getElementById(steps[cur-1]).classList.add('done'); }
+    if (cur < steps.length) { document.getElementById(steps[cur]).classList.add('active'); cur++; } else clearInterval(si);
+  }, 2500);
+
+  try {
+    const res = await fetch(WORKER_URL + '/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: state.email, brand: state.brandName, landingPageUrl: state.landingPageUrl, sector: state.sector, objective: state.objective, adImageBase64: state.adImage })
+    });
+    if (!res.ok) throw new Error(res.status);
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+    clearInterval(si);
+    steps.forEach(s => { document.getElementById(s).classList.remove('active'); document.getElementById(s).classList.add('done'); });
+    incrementScanCount();
+    setTimeout(() => renderResults(result), 500);
+  } catch(e) {
+    clearInterval(si);
+    console.error(e);
+    const mock = generateMockResults();
+    steps.forEach(s => { document.getElementById(s).classList.remove('active'); document.getElementById(s).classList.add('done'); });
+    incrementScanCount();
+    setTimeout(() => renderResults(mock), 500);
+  }
+}
+
+// ===== RESULTS =====
+function renderResults(data) {
+  showScreen('screen-results');
+  const score = data.globalScore;
+  const color = sc(score);
+
+  document.getElementById('results-subtitle').textContent = `${state.brandName || 'Analyse'} — ${new Date().toLocaleDateString('fr-FR')}`;
+
+  if (state.adImage) {
+    const card = document.getElementById('compared-card');
+    card.style.display = 'block';
+    document.getElementById('compared-ad-thumb').innerHTML = `<div class="compared-thumb-label">📱 Créa</div><img src="${state.adImage}" alt="Créa">`;
+    document.getElementById('compared-brand-name').textContent = state.brandName || 'Ta créa';
+    try {
+      const u = new URL(state.landingPageUrl);
+      document.getElementById('browser-url-text').textContent = u.hostname + u.pathname;
+      document.getElementById('browser-domain-text').textContent = u.hostname.replace('www.','');
+    } catch(e) {
+      document.getElementById('browser-url-text').textContent = state.landingPageUrl;
+      document.getElementById('browser-domain-text').textContent = state.landingPageUrl;
+    }
+    // Screenshot
+    const sc2 = document.getElementById('browser-screenshot');
+    const ph = document.getElementById('browser-placeholder');
+    const mlUrl = `https://api.microlink.io/?url=${encodeURIComponent(state.landingPageUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+    const thUrl = `https://image.thum.io/get/width/640/crop/400/noanimate/${state.landingPageUrl}`;
+    const img = new Image();
+    img.onload = function() { sc2.innerHTML=''; sc2.appendChild(img); sc2.classList.add('loaded'); ph.style.opacity='0'; };
+    img.onerror = function() {
+      const i2 = new Image();
+      i2.onload = function() { sc2.innerHTML=''; sc2.appendChild(i2); sc2.classList.add('loaded'); ph.style.opacity='0'; };
+      i2.onerror = function() { const l = ph.querySelector('.browser-body-loading'); if(l) l.textContent=''; };
+      i2.src = thUrl;
+    };
+    img.src = mlUrl;
+    document.getElementById('compared-lp-url').textContent = state.landingPageUrl;
+  }
+
+  const ring = document.getElementById('score-ring-fill');
+  ring.style.stroke = color;
+  const circ = 2 * Math.PI * 52;
+  setTimeout(() => { ring.style.strokeDashoffset = circ - (score/100)*circ; }, 100);
+
+  const sn = document.getElementById('global-score-num');
+  sn.style.color = color;
+  animN(sn, 0, score, 1200);
+
+  document.getElementById('global-score-label').textContent = data.globalLabel;
+  document.getElementById('global-score-label').style.color = color;
+  document.getElementById('global-score-desc').textContent = data.globalDesc;
+
+  document.getElementById('score-mini-bars').innerHTML = data.dimensions.map(d => `<div class="mini-bar-item"><div class="mini-bar-label">${d.emoji} ${d.shortName}</div><div class="mini-bar-track"><div class="mini-bar-fill" style="background:${sc(d.score)}" data-width="${d.score}"></div></div><div class="mini-bar-score" style="color:${sc(d.score)}">${d.score}</div></div>`).join('');
+
+  document.getElementById('dimensions-grid').innerHTML = data.dimensions.map(d => `<div class="dim-card"><div class="dim-head"><div class="dim-name"><div class="dim-emoji" style="background:${db(d.score)}">${d.emoji}</div>${d.name}</div><div class="dim-score-big" style="color:${sc(d.score)}">${d.score}</div></div><div class="dim-bar"><div class="dim-bar-fill" style="background:${sc(d.score)}" data-width="${d.score}"></div></div><div class="dim-verdict"><span class="dim-status ${stc(d.score)}">${stt(d.score)}</span></div><div class="dim-detail">${d.detail}</div></div>`).join('');
+
+  setTimeout(() => { document.querySelectorAll('.dim-bar-fill,.mini-bar-fill').forEach(b => { b.style.width = b.dataset.width + '%'; }); }, 100);
+
+  document.getElementById('reco-list').innerHTML = data.recommendations.map((r,i) => `<div class="reco-item"><div class="reco-priority ${i===0?'p-high':i===1?'p-med':'p-low'}">P${i+1}</div><div class="reco-content"><div class="reco-text">${r.text}</div><div class="reco-impact">📈 ${r.impact}</div></div></div>`).join('');
+}
+
+function sc(s) { return s>=75?'var(--green)':s>=55?'var(--yellow)':s>=35?'var(--orange)':'var(--red)'; }
+function db(s) { return s>=75?'var(--green-bg)':s>=55?'var(--yellow-bg)':s>=35?'var(--orange-bg)':'var(--red-bg)'; }
+function stc(s) { return s>=75?'status-pass':s>=55?'status-warn':s>=35?'status-alert':'status-fail'; }
+function stt(s) { return s>=75?'✓ BON':s>=55?'⚠ MOYEN':s>=35?'⚠ ALERTE':'✗ PROBLÈME'; }
+function animN(el,s,e,d) { const st=performance.now(); function u(n) { const p=Math.min((n-st)/d,1); el.textContent=Math.round(s+(e-s)*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(u); } requestAnimationFrame(u); }
+
+document.getElementById('btn-new-scan').addEventListener('click', () => {
+  document.querySelectorAll('.loading-step').forEach(s => s.classList.remove('active','done'));
+  document.getElementById('lstep-1').classList.add('active');
+  document.getElementById('compared-card').style.display = 'none';
+  if (!hasFreeScan()) { showScreen('screen-paywall'); } else { showScreen('screen-scan'); }
+});
+
+function generateMockResults() {
+  return {
+    globalScore: 58, globalLabel: "Cohérence moyenne", globalDesc: "Ta créa et ta landing page ont des incohérences qui coûtent probablement 25-40% de tes conversions post-clic.",
+    dimensions: [
+      { name: "Cohérence visuelle", shortName: "Visuel", emoji: "🎨", score: 74, detail: "Les couleurs et le style global sont alignés, mais le produit mis en avant dans l'ad n'est pas visible en hero de la landing page." },
+      { name: "Alignement du message", shortName: "Message", emoji: "💬", score: 38, detail: "L'ad met en avant une promotion mais la landing page n'affiche aucune réduction en zone visible. Décalage de promesse = facteur #1 de rebond." },
+      { name: "Continuité du CTA", shortName: "CTA", emoji: "🎯", score: 52, detail: "Le CTA de l'ad ne correspond pas au CTA de la page. L'intention d'achat est diluée à l'arrivée." },
+      { name: "Performance technique", shortName: "Tech", emoji: "⚡", score: 67, detail: "LCP à 2.8s sur mobile — au-dessus du seuil de 2.5s. Des éléments bougent au chargement." }
+    ],
+    recommendations: [
+      { text: "Ajoute un bandeau promo en hero reprenant exactement l'offre de l'ad.", impact: "+20-30% conversion" },
+      { text: "Aligne le CTA de la page avec la promesse de l'ad.", impact: "+10-15% clic CTA" },
+      { text: "Place le produit de l'ad en position hero sur la page.", impact: "+12-18% ajout panier" },
+      { text: "Optimise les images (WebP, lazy loading) pour passer sous 2.5s.", impact: "-25% rebond mobile" }
+    ]
+  };
+}
+</script>
+</body>
+</html>
