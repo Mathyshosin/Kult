@@ -2063,6 +2063,101 @@
         }
 
         // ==========================================
+        // BRAND DATA SCRAPING
+        // ==========================================
+        async function fetchBrandData(brandUrl) {
+            try {
+                const mlUrl = `https://api.microlink.io/?url=${encodeURIComponent(brandUrl)}&palette=true`;
+                const response = await fetch(mlUrl);
+                const result = await response.json();
+
+                if (result.status !== 'success' || !result.data) {
+                    console.warn('Microlink: no data', result);
+                    return null;
+                }
+
+                const d = result.data;
+                return {
+                    title: d.title || '',
+                    description: d.description || '',
+                    ogImage: d.image?.url || null,
+                    logo: d.logo?.url || null,
+                    palette: d.image?.palette || [],
+                    lang: d.lang || 'fr',
+                    author: d.author || '',
+                    publisher: d.publisher || '',
+                    url: d.url || brandUrl
+                };
+            } catch (e) {
+                console.warn('fetchBrandData error:', e);
+                return null;
+            }
+        }
+
+        async function fetchScreenshot(brandUrl) {
+            try {
+                const thUrl = `https://image.thum.io/get/width/1280/crop/900/noanimate/${brandUrl}`;
+                const base64 = await imageUrlToBase64(thUrl);
+                return base64;
+            } catch (e) {
+                console.warn('fetchScreenshot error:', e);
+                return null;
+            }
+        }
+
+        function imageUrlToBase64(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    try {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        resolve(dataUrl.split(',')[1]); // Return pure base64
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                img.onerror = () => reject(new Error('Image load failed'));
+                img.src = url;
+            });
+        }
+
+        async function prepareImagesForExport(element) {
+            const images = element.querySelectorAll('img');
+            const promises = Array.from(images).map(async (img) => {
+                if (img.src.startsWith('data:')) return; // Already data URI
+                try {
+                    const response = await fetch(img.src, { mode: 'cors' });
+                    const blob = await response.blob();
+                    const reader = new FileReader();
+                    await new Promise((resolve) => {
+                        reader.onload = () => {
+                            img.src = reader.result;
+                            resolve();
+                        };
+                        reader.onerror = resolve; // Skip on error
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (e) {
+                    // CORS blocked — create a colored placeholder instead
+                    const w = img.offsetWidth || 400;
+                    const h = img.offsetHeight || 400;
+                    const c = document.createElement('canvas');
+                    c.width = w; c.height = h;
+                    const ctx = c.getContext('2d');
+                    ctx.fillStyle = '#3d221a';
+                    ctx.fillRect(0, 0, w, h);
+                    img.src = c.toDataURL('image/png');
+                }
+            });
+            await Promise.all(promises);
+        }
+
+        // ==========================================
         // SCREEN MANAGEMENT
         // ==========================================
         function showScreen(screenId) {
@@ -2361,15 +2456,25 @@
             startLoadingAnimation(brandName, brandUrl);
 
             try {
-                // === APPEL CLAUDE #1 : Analyse + Brief + Hooks + Strategie ===
-                const prompt1 = buildPrompt1(brandUrl, brandName, productType, objective, budget);
+                // === STEP 1 : Scrape brand data via microlink.io ===
+                const [brandData, screenshot] = await Promise.all([
+                    fetchBrandData(brandUrl),
+                    fetchScreenshot(brandUrl)
+                ]);
+
+                const hasScreenshot = !!screenshot;
+                const imageForClaude = screenshot || PLACEHOLDER_IMG;
+                const mediaType = hasScreenshot ? 'image/png' : 'image/png';
+
+                // === STEP 2 : APPEL CLAUDE #1 : Analyse + Brief + Hooks + Strategie ===
+                const prompt1 = buildPrompt1(brandUrl, brandName, productType, objective, budget, brandData, hasScreenshot);
 
                 const response1 = await fetch(CLAUDE_WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        image: PLACEHOLDER_IMG,
-                        mediaType: 'image/png',
+                        image: imageForClaude,
+                        mediaType: mediaType,
                         prompt: prompt1
                     })
                 });
@@ -2380,9 +2485,9 @@
                 const text1 = data1.content[0].text;
                 const json1 = JSON.parse(text1.match(/\{[\s\S]*\}/)[0]);
 
-                // === APPEL CLAUDE #2 : Specifications visuelles ===
+                // === STEP 3 : APPEL CLAUDE #2 : Specifications visuelles ===
                 const bestHooks = extractBestHooks(json1.hooks);
-                const prompt2 = buildPrompt2(json1.analyse, bestHooks, brandName);
+                const prompt2 = buildPrompt2(json1.analyse, bestHooks, brandName, brandData);
 
                 const response2 = await fetch(CLAUDE_WORKER_URL, {
                     method: 'POST',
@@ -2407,7 +2512,8 @@
                     hooks: json1.hooks,
                     strategie: json1.strategie,
                     visuels: json2.visuels,
-                    meta: { brandName, brandUrl, productType, objective, budget }
+                    meta: { brandName, brandUrl, productType, objective, budget },
+                    brandData: brandData || null
                 };
 
                 currentResults = results;
@@ -2415,15 +2521,17 @@
                 // Increment quota
                 incrementScans();
 
-                // Save to history
-                saveToHistory(results, brandName, brandUrl);
+                // Save to history (without brandData to save localStorage space)
+                const historyResults = { ...results };
+                delete historyResults.brandData;
+                saveToHistory(historyResults, brandName, brandUrl);
 
                 // Complete loading animation
                 completeLoadingAnimation();
 
                 // Display
                 setTimeout(() => {
-                    document.getElementById('results-brand-name').textContent = brandName;
+                    document.getElementById('results-brand-name').textContent = json1.analyse?.nom || brandName;
                     document.getElementById('results-brand-url').textContent = brandUrl;
                     displayResults(results, hasUnlockedResults);
                     showScreen('screen-results');
@@ -2445,12 +2553,35 @@
         // ==========================================
         // PROMPTS
         // ==========================================
-        function buildPrompt1(brandUrl, brandName, productType, objective, budget) {
+        function buildPrompt1(brandUrl, brandName, productType, objective, budget, brandData, hasScreenshot) {
             const productLabels = { ecommerce: 'E-commerce physique', saas: 'SaaS / Logiciel', service: 'Service / Prestation', formation: 'Formation / Info-produit' };
             const objectiveLabels = { acquisition: 'Acquisition de nouveaux clients', retargeting: 'Retargeting / Relance', notoriete: 'Notoriete de marque', lancement: 'Lancement de produit' };
             const budgetLabels = { 'inf1k': 'Moins de 1 000 euros/mois', '1-5k': '1 000 - 5 000 euros/mois', '5-15k': '5 000 - 15 000 euros/mois', 'sup15k': 'Plus de 15 000 euros/mois' };
 
-            return `IGNORE L'IMAGE (c'est un placeholder technique). Tu es un expert senior en publicite Meta Ads et Google Ads, specialise dans la creation de campagnes performantes pour les marques e-commerce, SaaS et services.
+            // Build real brand data section
+            let brandDataSection = '';
+            if (brandData) {
+                const paletteStr = (brandData.palette || []).map(c => typeof c === 'string' ? c : (c.hex || c.value || '')).filter(Boolean).join(', ');
+                brandDataSection = `
+DONNEES REELLES DU SITE (extraites automatiquement, fiables) :
+- Titre du site : ${brandData.title || 'Non disponible'}
+- Description meta : ${brandData.description || 'Non disponible'}
+- Image principale (OG) : ${brandData.ogImage || 'Non disponible'}
+- Logo : ${brandData.logo || 'Non disponible'}
+- Couleurs detectees sur le site : ${paletteStr || 'Non disponible'}
+- Langue : ${brandData.lang || 'fr'}
+- Auteur/Editeur : ${brandData.author || brandData.publisher || 'Non disponible'}
+
+IMPORTANT : Base ton analyse sur ces donnees REELLES. Ne devine pas, utilise les informations ci-dessus comme source de verite. Si tu connais cette marque, enrichis avec tes connaissances.`;
+            }
+
+            const screenshotInstruction = hasScreenshot
+                ? `L'IMAGE JOINTE est un screenshot reel du site web de la marque. Analyse-le en detail : design, couleurs, typographie, produits visibles, positionnement, ton visuel. Utilise ces observations visuelles dans ton analyse.`
+                : `IGNORE L'IMAGE (c'est un placeholder technique). Base-toi uniquement sur l'URL et les donnees fournies.`;
+
+            return `${screenshotInstruction}
+
+Tu es un expert senior en publicite Meta Ads et Google Ads avec 10+ ans d'experience, specialise dans la creation de campagnes performantes. Tu dois produire une analyse APPROFONDIE et SPECIFIQUE a cette marque, pas des generalites.
 
 CONTEXTE :
 - Marque : ${brandName}
@@ -2458,8 +2589,9 @@ CONTEXTE :
 - Type : ${productLabels[productType] || productType}
 - Objectif : ${objectiveLabels[objective] || objective}
 - Budget : ${budgetLabels[budget] || budget}
+${brandDataSection}
 
-A partir de l'URL "${brandUrl}", deduis le secteur d'activite, le positionnement de la marque, la cible probable, le ton de communication et les couleurs de marque. Si tu connais cette marque, utilise tes connaissances pour etre encore plus precis.
+Analyse en profondeur cette marque. Identifie precisement : ce qu'elle vend, a qui, comment elle se positionne, quel est son ton, ses couleurs, son univers visuel. Sois SPECIFIQUE et PRECIS, pas generique.
 
 GENERE EXACTEMENT ce JSON (et RIEN d'autre, pas de texte avant ou apres) :
 
@@ -2549,11 +2681,20 @@ REGLES POUR LA STRATEGIE :
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans texte explicatif.`;
         }
 
-        function buildPrompt2(analyse, bestHooks, brandName) {
+        function buildPrompt2(analyse, bestHooks, brandName, brandData) {
             const colors = analyse?.couleurs || ['#e8854a', '#1a0f0a', '#fdf8f5', '#2d1810'];
             const hookTexts = bestHooks.map((h, i) => `Hook ${i+1} (${h.categorie}): "${h.texte}"`).join('\n');
 
-            return `IGNORE L'IMAGE (c'est un placeholder technique). Tu es un directeur artistique senior specialise en publicites digitales (Meta Ads, Google Ads).
+            // Collect available product images from brandData
+            const productImages = [];
+            if (brandData?.ogImage) productImages.push(brandData.ogImage);
+            if (brandData?.logo) productImages.push(brandData.logo);
+
+            const imageSection = productImages.length > 0
+                ? `\nIMAGES DISPONIBLES DE LA MARQUE (URLs reelles, utilisables dans les visuels) :\n${productImages.map((url, i) => `- Image ${i+1}: ${url}`).join('\n')}\n\nTu DOIS utiliser ces images dans tes visuels. Integre-les comme elements "image" dans le JSON. Ce sont de vraies images du site de la marque (produits, lifestyle, hero images).`
+                : '';
+
+            return `IGNORE L'IMAGE (c'est un placeholder technique). Tu es un directeur artistique senior avec 15 ans d'experience en publicites digitales performantes (Meta Ads, Google Ads). Tu crees des ads qui CONVERTISSENT.
 
 CONTEXTE :
 - Marque : ${brandName}
@@ -2564,96 +2705,70 @@ CONTEXTE :
 
 HOOKS A UTILISER POUR LES VISUELS :
 ${hookTexts}
+${imageSection}
 
 Genere EXACTEMENT ce JSON (et RIEN d'autre) avec 4 specifications de visuels publicitaires.
 Chaque visuel fait 1080x1080 pixels. Les elements sont positionnes en absolute dans un conteneur relatif.
 
+TYPES D'ELEMENTS SUPPORTES :
+
+1. "text" : Texte avec position, taille, couleur
+{
+  "type": "text",
+  "content": "Texte a afficher",
+  "x": 80, "y": 120, "width": 920,
+  "fontSize": 64, "fontWeight": "800",
+  "color": "#ffffff", "textAlign": "left",
+  "lineHeight": 1.15, "editable": true
+}
+
+2. "image" : Image externe (produit, lifestyle)
+{
+  "type": "image",
+  "src": "URL_COMPLETE_DE_L_IMAGE",
+  "x": 0, "y": 0, "width": 1080, "height": 600,
+  "objectFit": "cover",
+  "borderRadius": 0,
+  "opacity": 1
+}
+
+3. "shape" : Rectangle colore (boutons, separateurs, overlays)
+{
+  "type": "shape", "shape": "rect",
+  "x": 80, "y": 900, "width": 280, "height": 56,
+  "borderRadius": 28, "background": "#e8854a",
+  "opacity": 1,
+  "children": [{"type": "text", "content": "CTA", "fontSize": 18, "fontWeight": "700", "color": "#fff", "textAlign": "center"}]
+}
+
+FORMAT DU JSON :
 {
   "visuels": [
     {
       "id": 1,
-      "nom": "Nom du visuel (ex: Impact Statement)",
-      "style": "Description du style (ex: Bold minimaliste)",
-      "background": {
-        "type": "gradient",
-        "value": "linear-gradient(135deg, #color1 0%, #color2 100%)"
-      },
-      "elements": [
-        {
-          "type": "text",
-          "content": "Texte a afficher",
-          "x": 80,
-          "y": 120,
-          "width": 920,
-          "fontSize": 64,
-          "fontWeight": "800",
-          "color": "#ffffff",
-          "textAlign": "left",
-          "lineHeight": 1.15,
-          "editable": true
-        },
-        {
-          "type": "text",
-          "content": "Sous-texte ou CTA",
-          "x": 80,
-          "y": 800,
-          "width": 920,
-          "fontSize": 28,
-          "fontWeight": "500",
-          "color": "rgba(255,255,255,0.7)",
-          "textAlign": "left",
-          "lineHeight": 1.4,
-          "editable": true
-        },
-        {
-          "type": "shape",
-          "shape": "rect",
-          "x": 80,
-          "y": 900,
-          "width": 280,
-          "height": 56,
-          "borderRadius": 28,
-          "background": "#e8854a",
-          "children": [
-            {
-              "type": "text",
-              "content": "Decouvrir →",
-              "fontSize": 18,
-              "fontWeight": "700",
-              "color": "#ffffff",
-              "textAlign": "center",
-              "editable": true
-            }
-          ]
-        },
-        {
-          "type": "text",
-          "content": "${brandName}",
-          "x": 80,
-          "y": 40,
-          "width": 200,
-          "fontSize": 22,
-          "fontWeight": "800",
-          "color": "rgba(255,255,255,0.5)",
-          "textAlign": "left",
-          "editable": false
-        }
-      ]
+      "nom": "Nom descriptif du visuel",
+      "style": "Description du style",
+      "background": {"type": "gradient", "value": "linear-gradient(...)"},
+      "elements": [...]
     }
   ]
 }
 
-REGLES DE DESIGN :
+REGLES DE DESIGN STRICTES :
 1. Chaque visuel DOIT utiliser un des 4 hooks fournis comme texte principal
 2. Utilise les couleurs de la marque (${colors.join(', ')}) comme base
-3. 4 styles differents : un bold/minimaliste, un avec fond colore vibrant, un style editorial/magazine, un avec contraste fort
-4. Le texte principal (hook) doit etre GROS et dominant (fontSize 48-72px)
-5. Inclus toujours : logo/nom de marque (petit, en haut), texte principal (hook), sous-texte/description, CTA (bouton)
-6. Positions en pixels (canvas 1080x1080), pas de pourcentages
-7. Assure-toi que les textes ne debordent pas (width + x < 1080, y + hauteur estimee < 1080)
-8. Varie les compositions : texte centre, texte a gauche, texte en bas, texte en overlay
-9. Les fonds doivent etre des gradients ou couleurs solides (pas d'images)
-10. Rends le resultat pro et pret a publier
+3. ${productImages.length > 0 ? 'OBLIGATOIRE : Integre les images produit de la marque. Au moins 3 visuels sur 4 doivent contenir une image produit en hero (grande, dominante). Utilise les URLs fournies ci-dessus.' : 'Utilise des fonds gradients qui evoquent l\'univers visuel de la marque.'}
+4. 4 styles differents et complementaires :
+   - Visuel 1 : Image produit plein cadre + texte en overlay avec fond semi-transparent
+   - Visuel 2 : Split layout (image a gauche/droite, texte de l'autre cote)
+   - Visuel 3 : Image produit en fond avec gradient overlay + hook en gros
+   - Visuel 4 : Design graphique bold avec couleurs de marque + accents visuels
+5. Le texte principal (hook) doit etre GROS et dominant (fontSize 48-72px)
+6. Inclus toujours : nom de marque (petit, en haut), texte principal (hook), sous-texte, CTA (bouton)
+7. Positions en pixels (canvas 1080x1080), x + width <= 1080, y + hauteur estimee <= 1080
+8. Pour les images avec du texte par-dessus : ajoute un shape semi-transparent comme overlay (ex: rgba(0,0,0,0.5))
+9. Le resultat doit ressembler a une VRAIE publicite Meta/Instagram, pas un slide PowerPoint
+10. Pense "scroll-stopping" : les visuels doivent attirer l'oeil immediatement
 
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans texte explicatif.`;
         }
@@ -3111,7 +3226,38 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
             const scale = containerRect.width / 1080;
 
             elements.forEach(el => {
-                if (el.type === 'text') {
+                if (el.type === 'image') {
+                    // Product/brand image element
+                    const img = document.createElement('img');
+                    img.style.position = 'absolute';
+                    img.style.left = (el.x * scale) + 'px';
+                    img.style.top = (el.y * scale) + 'px';
+                    img.style.width = (el.width * scale) + 'px';
+                    img.style.height = ((el.height || el.width) * scale) + 'px';
+                    img.style.objectFit = el.objectFit || 'cover';
+                    img.style.borderRadius = ((el.borderRadius || 0) * scale) + 'px';
+                    if (el.opacity !== undefined && el.opacity < 1) {
+                        img.style.opacity = el.opacity;
+                    }
+                    img.crossOrigin = 'anonymous';
+                    img.src = el.src;
+
+                    // Fallback: if image fails to load, show colored placeholder
+                    img.onerror = () => {
+                        const fallback = document.createElement('div');
+                        fallback.style.position = 'absolute';
+                        fallback.style.left = img.style.left;
+                        fallback.style.top = img.style.top;
+                        fallback.style.width = img.style.width;
+                        fallback.style.height = img.style.height;
+                        fallback.style.borderRadius = img.style.borderRadius;
+                        fallback.style.background = 'linear-gradient(135deg, #3d221a 0%, #2d1810 100%)';
+                        container.replaceChild(fallback, img);
+                    };
+
+                    container.appendChild(img);
+
+                } else if (el.type === 'text') {
                     const div = document.createElement('div');
                     div.style.position = 'absolute';
                     div.style.left = (el.x * scale) + 'px';
@@ -3149,6 +3295,9 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                     div.style.height = (el.height * scale) + 'px';
                     div.style.borderRadius = ((el.borderRadius || 0) * scale) + 'px';
                     div.style.background = el.background || 'transparent';
+                    if (el.opacity !== undefined) {
+                        div.style.opacity = el.opacity;
+                    }
                     div.style.display = 'flex';
                     div.style.alignItems = 'center';
                     div.style.justifyContent = 'center';
@@ -3219,6 +3368,9 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                 });
 
                 document.body.appendChild(clone);
+
+                // Convert external images to data URIs for CORS-safe export
+                await prepareImagesForExport(clone);
 
                 const canvas = await html2canvas(clone, {
                     width: 1080,
