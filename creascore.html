@@ -2198,6 +2198,18 @@
             if (!hasUnlockedResults && tabId !== 'tab-analyse') {
                 showEmailModal();
             }
+
+            // Lazy render visuals when tab becomes visible
+            if (tabId === 'tab-visuels' && window._pendingVisuals) {
+                requestAnimationFrame(() => {
+                    window._pendingVisuals.forEach((v, i) => {
+                        const container = document.getElementById('ad-render-' + i);
+                        if (container && container.children.length === 0) {
+                            renderAd(container, v);
+                        }
+                    });
+                });
+            }
         }
 
         // ==========================================
@@ -3048,10 +3060,8 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                 </div>
             `).join('');
 
-            // Render each ad
-            data.forEach((v, i) => {
-                renderAd(document.getElementById('ad-render-' + i), v);
-            });
+            // Store specs for lazy rendering (tab may not be visible yet)
+            window._pendingVisuals = data;
         }
 
         // --- TAB 5: STRATEGIE ---
@@ -3222,8 +3232,12 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
             container.innerHTML = '';
 
             const elements = spec.elements || [];
-            const containerRect = container.getBoundingClientRect();
-            const scale = containerRect.width / 1080;
+            let containerWidth = container.getBoundingClientRect().width;
+            // Fallback if container not visible yet (hidden tab)
+            if (!containerWidth || containerWidth < 10) {
+                containerWidth = 500; // reasonable default for half of 1100px grid
+            }
+            const scale = containerWidth / 1080;
 
             elements.forEach(el => {
                 if (el.type === 'image') {
