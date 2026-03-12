@@ -1611,6 +1611,72 @@
             z-index: -1;
         }
 
+        /* Offer Grid - New Layout */
+        .offer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .offer-left {
+            text-align: left;
+        }
+
+        .offer-pillars {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .offer-pillar {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .offer-pillar-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(232, 133, 74, 0.12);
+            border-radius: 12px;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .offer-cta-card {
+            background: linear-gradient(145deg, rgba(232, 133, 74, 0.1) 0%, var(--bg-card) 100%);
+            border: 1px solid rgba(232, 133, 74, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .offer-reassurance {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .offer-reassurance span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .offer-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .offer-cta-card {
+                padding: 36px 24px;
+            }
+        }
+
         .single-offer-container {
             display: flex;
             flex-direction: column;
@@ -3751,73 +3817,52 @@
         </div>
     </section>
 
-    <!-- Offers - Single Offer -->
-    <section id="offres">
-        <div class="single-offer-container">
-            <div class="single-offer-content">
+    <!-- Offers -->
+    <section id="offres" style="padding: 100px 24px; max-width: 1200px; margin: 0 auto;">
+        <div class="offer-grid">
+            <div class="offer-left">
                 <div class="section-tag">Notre accompagnement</div>
                 <h2 class="single-offer-title">Un partenariat sur-mesure,<br><span class="highlight">aligné sur vos résultats</span></h2>
-                <p class="single-offer-desc">Chaque e-commerce est unique. C'est pourquoi on construit ensemble une formule adaptée à votre situation, vos objectifs et votre budget.</p>
-                
-                <div class="single-offer-pillars">
-                    <div class="pillar">
-                        <div class="pillar-icon">🎯</div>
-                        <div class="pillar-content">
-                            <h4>Créatives optimisées</h4>
-                            <p>Des visuels pensés pour convertir, analysés par notre IA</p>
+                <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 40px;">Chaque e-commerce est unique. On construit ensemble une formule adaptée à vos objectifs.</p>
+
+                <div class="offer-pillars">
+                    <div class="offer-pillar">
+                        <span class="offer-pillar-icon">🎯</span>
+                        <div>
+                            <strong style="font-size: 1rem; display: block; margin-bottom: 4px;">Créatives optimisées</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">Des visuels pensés pour convertir, analysés par notre IA</p>
                         </div>
                     </div>
-                    <div class="pillar">
-                        <div class="pillar-icon">📊</div>
-                        <div class="pillar-content">
-                            <h4>Pilotage Meta et Google Ads</h4>
-                            <p>Gestion complète de vos campagnes par des experts</p>
+                    <div class="offer-pillar">
+                        <span class="offer-pillar-icon">📊</span>
+                        <div>
+                            <strong style="font-size: 1rem; display: block; margin-bottom: 4px;">Pilotage Meta et Google Ads</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">Gestion complète de vos campagnes par des experts</p>
                         </div>
                     </div>
-                    <div class="pillar">
-                        <div class="pillar-icon">💰</div>
-                        <div class="pillar-content">
-                            <h4>Modèle à la performance</h4>
-                            <p>On gagne quand vous gagnez. Pas de résultat, pas de frais</p>
+                    <div class="offer-pillar">
+                        <span class="offer-pillar-icon">💰</span>
+                        <div>
+                            <strong style="font-size: 1rem; display: block; margin-bottom: 4px;">Modèle à la performance</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">On gagne quand vous gagnez. Pas de résultat, pas de frais</p>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="single-offer-cta-box">
-                <div class="cta-box-header">
-                    <span class="cta-box-badge">Audit gratuit · Places limitées</span>
-                    <h3>Commençons par un échange</h3>
-                    <p>30 minutes pour analyser votre situation et définir si on peut vous aider à scaler.</p>
-                </div>
-                
-                <div class="cta-box-includes">
-                    <div class="include-item">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                        <span>Analyse de vos ads actuelles</span>
-                    </div>
-                    <div class="include-item">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                        <span>Identification des opportunités</span>
-                    </div>
-                    <div class="include-item">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                        <span>Recommandation personnalisée</span>
-                    </div>
-                </div>
-                
+
+            <div class="offer-cta-card">
+                <span class="cta-box-badge">Audit gratuit · Places limitées</span>
+                <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; margin-bottom: 10px;">Commençons par un échange</h3>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 28px;">30 min pour analyser votre situation et définir si on peut vous aider.</p>
                 <a href="booking.html" target="_blank" class="single-offer-cta">
                     Réserver mon audit gratuit
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                 </a>
-
-                <div class="cta-box-reassurance">
-                    <span>&check; Sans engagement</span>
-                    <span>&check; 100% gratuit</span>
-                    <span>&check; 0 r&eacute;sultat = 0&euro;</span>
-                    <span>&check; Réponse sous 24h</span>
+                <div class="offer-reassurance">
+                    <span>✓ Sans engagement</span>
+                    <span>✓ 100% gratuit</span>
                 </div>
             </div>
         </div>
