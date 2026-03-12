@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CréaScore by KULT — Analysez vos créatives Meta Ads avec l'IA</title>
-    <meta name="description" content="Obtenez un score de performance IA pour vos publicités Meta Ads. Recommandations personnalisées, prévisions CTR/CVR et ciblage optimal en 30 secondes.">
+    <title>CréaScore by KULT — Analysez vos créatives avec l'IA</title>
+    <meta name="description" content="Entrez l'URL de votre marque, uploadez votre ad et obtenez un score IA, des recommandations personnalisées et des prévisions CTR/CVR en 30 secondes.">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a0f0a'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='18' font-weight='800' fill='%23e8854a' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
@@ -882,32 +882,18 @@
         <main class="main">
             <section class="hero">
                 <div class="hero-badge">✨ CréaScore par KULT</div>
-                <h1>Analysez vos <em>Meta Ads</em> avec l'IA</h1>
-                <p>Score de performance, recommandations actionnables et prévisions CTR/CVR en 30 secondes.</p>
+                <h1>Analysez vos <em>ads</em> avec l'IA</h1>
+                <p>Entrez l'URL de votre marque, uploadez votre créative, et obtenez un score + recommandations en 30 secondes.</p>
                 <div class="free-counter" id="free-counter">
                     <span>🎁</span> <span id="free-counter-text">1 analyse gratuite disponible</span>
                 </div>
             </section>
 
             <div class="card">
-                <h2 class="card-title">🏷️ Votre marque</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Nom de la marque *</label>
-                        <input type="text" class="form-input" id="brand-name" placeholder="Ex: Ma Marque">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Site web *</label>
-                        <input type="url" class="form-input" id="brand-website" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Secteur</label>
-                        <input type="text" class="form-input" id="brand-sector" placeholder="Ex: Bijoux artisanaux, Soins naturels...">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Cible principale</label>
-                        <input type="text" class="form-input" id="brand-target" placeholder="Ex: Femmes 25-45 ans">
-                    </div>
+                <h2 class="card-title">🔗 URL de votre marque</h2>
+                <div class="form-group full">
+                    <label class="form-label">On analyse votre site pour comprendre votre marque automatiquement</label>
+                    <input type="url" class="form-input" id="brand-website" placeholder="https://www.votre-marque.com" style="font-size: 1.05rem; padding: 16px 18px;">
                 </div>
             </div>
 
@@ -994,7 +980,7 @@
                 <div class="results-cta">
                     <div style="font-size: 2rem; margin-bottom: 10px;">🎁</div>
                     <h3>Besoin d'aller plus loin ?</h3>
-                    <p>KULT Agency optimise vos créatives Meta Ads avec un modèle 100% performance : 0 résultat = 0€. Réservez un audit gratuit.</p>
+                    <p>KULT optimise vos créatives Meta et Google Ads avec un modèle 100% performance : 0 résultat = 0€.</p>
                     <div class="results-cta-buttons">
                         <a href="https://www.kult-agency.com/booking.html" target="_blank" class="btn-accent">📞 Réserver mon audit gratuit</a>
                         <a href="https://www.kult-agency.com/" target="_blank" class="btn-outline">Découvrir KULT →</a>
@@ -1269,20 +1255,26 @@
             const saved = localStorage.getItem(STORAGE_KEYS.brandInfo);
             if (saved) {
                 const info = JSON.parse(saved);
-                document.getElementById('brand-name').value = info.name || '';
                 document.getElementById('brand-website').value = info.website || '';
-                document.getElementById('brand-sector').value = info.sector || '';
-                document.getElementById('brand-target').value = info.target || '';
             }
         }
 
         function saveBrandInfo() {
             localStorage.setItem(STORAGE_KEYS.brandInfo, JSON.stringify({
-                name: document.getElementById('brand-name').value,
-                website: document.getElementById('brand-website').value,
-                sector: document.getElementById('brand-sector').value,
-                target: document.getElementById('brand-target').value
+                website: document.getElementById('brand-website').value
             }));
+        }
+
+        function extractBrandName(url) {
+            try {
+                const hostname = new URL(url).hostname;
+                // Remove www. and TLD
+                let name = hostname.replace(/^www\./, '').split('.')[0];
+                // Capitalize first letter
+                return name.charAt(0).toUpperCase() + name.slice(1);
+            } catch {
+                return url;
+            }
         }
 
         // ============================================
@@ -1296,25 +1288,27 @@
                 return;
             }
 
-            const brandName = document.getElementById('brand-name').value.trim();
             const brandWebsite = document.getElementById('brand-website').value.trim();
-            
-            if (!brandName) { toast('Entre le nom de ta marque', true); return; }
-            if (!brandWebsite) { toast('Entre le site web', true); return; }
+
+            if (!brandWebsite) { toast('Entre l\'URL de ta marque', true); return; }
             if (!currentFile) { toast('Ajoute une créative à analyser', true); return; }
-            
+
+            // Auto-add https if missing
+            let websiteUrl = brandWebsite;
+            if (!websiteUrl.startsWith('http')) websiteUrl = 'https://' + websiteUrl;
+            document.getElementById('brand-website').value = websiteUrl;
+
             showLoading(true);
             saveBrandInfo();
-            
+
             try {
                 const base64 = await fileToBase64(currentFile);
                 const isVideo = currentFile.type.startsWith('video/');
-                
+                const brandName = extractBrandName(websiteUrl);
+
                 const brandInfo = {
                     name: brandName,
-                    website: brandWebsite,
-                    sector: document.getElementById('brand-sector').value.trim(),
-                    target: document.getElementById('brand-target').value.trim()
+                    website: websiteUrl
                 };
                 
                 const analysisData = await performAnalysis(base64, isVideo, brandInfo);
@@ -1361,22 +1355,20 @@
         }
 
         async function performAnalysis(base64, isVideo, brandInfo) {
-            const { name, website, sector, target } = brandInfo;
-            
-            const calibrationText = CALIBRATION.map(ex => 
+            const { name, website } = brandInfo;
+
+            const calibrationText = CALIBRATION.map(ex =>
                 `- "${ex.name}": ${ex.description} → Score: ${ex.score}/100`
             ).join('\n');
-
-            const sectorLabel = sector || 'E-commerce général';
 
             const prompt = `Tu es un expert senior en Meta Ads créatives avec 10+ ans d'expérience en performance publicitaire e-commerce. Tu analyses cette créative comme un media buyer chevronné qui doit décider si elle va performer ou non.
 
 CONTEXTE MARQUE:
 - Marque: ${name}
-- Site: ${website}
-- Secteur: ${sectorLabel}
-- Cible: ${target || 'Non spécifiée'}
+- Site web: ${website}
 - Type créative: ${isVideo ? 'VIDÉO' : 'IMAGE STATIQUE'}
+
+IMPORTANT: À partir de l'URL "${website}", déduis le secteur d'activité, le positionnement de la marque, la cible probable et le ton de communication. Utilise ces informations pour contextualiser toute ton analyse. Si tu connais cette marque, utilise tes connaissances pour être encore plus précis.
 
 CALIBRATION DE SCORING (utilise ces exemples comme référence absolue pour tes scores):
 ${calibrationText}
@@ -1408,7 +1400,7 @@ ${isVideo ? `
 Le critère marqué (×2) a un poids double dans le calcul du globalScore.
 
 SUGGESTION AUDIENCE META:
-Basé sur le secteur "${sectorLabel}", la cible "${target || 'large'}", et les éléments visuels de la créative, propose un ciblage Meta Ads optimal.
+Basé sur le secteur que tu as déduit du site ${website}, la cible probable de la marque, et les éléments visuels de la créative, propose un ciblage Meta Ads optimal.
 
 RÉPONDS UNIQUEMENT EN JSON VALIDE (pas de texte avant ni après):
 {
@@ -1472,7 +1464,7 @@ CONSIGNES FINALES:
 - Les recommandations doivent être CONCRÈTES et ACTIONNABLES (pas de généralités).
 - Le verdict doit être "Critique", "Faible", "Moyen", "Bon" ou "Excellent".
 - Le potentialScore représente le score atteignable si toutes les recommandations sont appliquées.
-- Les prévisions CTR/thumbStop/CVR doivent être réalistes pour le secteur ${sectorLabel}.`;
+- Les prévisions CTR/thumbStop/CVR doivent être réalistes pour le secteur déduit de ${website}.`;
 
             const response = await fetch(CLAUDE_WORKER_URL, {
                 method: 'POST',
