@@ -1738,7 +1738,7 @@
         <div class="hero">
             <div class="hero-badge">Analyse + Brief + Hooks + Visuels + Strategie</div>
             <h1>Generez vos ads<br><em>en 2 minutes</em></h1>
-            <p class="hero-sub">Entrez l'URL de votre marque, on s'occupe du reste. Analyse, brief creatif, 18 hooks, visuels telechargeables et strategie de lancement complete.</p>
+            <p class="hero-sub">Collez l'URL de votre marque et c'est tout. On analyse votre site et on genere tout automatiquement.</p>
         </div>
 
         <div class="form-section">
@@ -1749,70 +1749,8 @@
                     <span>🔗</span> URL de votre marque
                 </div>
                 <div class="form-group">
-                    <label class="form-label">On analyse votre site pour comprendre votre marque automatiquement</label>
+                    <label class="form-label">On analyse votre site pour tout generer automatiquement</label>
                     <input type="url" class="form-input" id="brand-url" placeholder="https://www.votre-marque.com" autofocus>
-                </div>
-
-                <!-- Type de produit -->
-                <div class="form-group" style="margin-top: 28px;">
-                    <label class="form-label">Type de produit</label>
-                    <div class="select-grid" id="product-type">
-                        <div class="select-option" data-value="ecommerce" onclick="selectOption(this)">🛍️ E-commerce</div>
-                        <div class="select-option" data-value="saas" onclick="selectOption(this)">💻 SaaS</div>
-                        <div class="select-option" data-value="service" onclick="selectOption(this)">🤝 Service</div>
-                        <div class="select-option" data-value="formation" onclick="selectOption(this)">🎓 Formation</div>
-                    </div>
-                </div>
-
-                <!-- Objectif -->
-                <div class="form-group" style="margin-top: 28px;">
-                    <label class="form-label">Objectif principal</label>
-                    <div class="select-grid" id="objective">
-                        <div class="select-option" data-value="acquisition" onclick="selectOption(this)">🎯 Acquisition</div>
-                        <div class="select-option" data-value="retargeting" onclick="selectOption(this)">🔄 Retargeting</div>
-                        <div class="select-option" data-value="notoriete" onclick="selectOption(this)">📢 Notoriete</div>
-                        <div class="select-option" data-value="lancement" onclick="selectOption(this)">🚀 Lancement</div>
-                    </div>
-                </div>
-
-                <!-- Budget -->
-                <div class="form-group" style="margin-top: 28px;">
-                    <label class="form-label">Budget mensuel ads</label>
-                    <div class="select-grid" id="budget">
-                        <div class="select-option" data-value="inf1k" onclick="selectOption(this)">&lt; 1 000 &euro;</div>
-                        <div class="select-option" data-value="1-5k" onclick="selectOption(this)">1 - 5 000 &euro;</div>
-                        <div class="select-option" data-value="5-15k" onclick="selectOption(this)">5 - 15 000 &euro;</div>
-                        <div class="select-option" data-value="sup15k" onclick="selectOption(this)">&gt; 15 000 &euro;</div>
-                    </div>
-                </div>
-
-                <!-- Personnaliser (optionnel) -->
-                <div style="margin-top: 28px;">
-                    <div class="form-card-title clickable" onclick="toggleAdvanced()">
-                        <span>⚙️</span> Personnaliser <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">(optionnel)</span> <span class="arrow" id="advanced-arrow">▸</span>
-                    </div>
-                    <div id="advanced-section">
-                        <div class="form-group">
-                            <label class="form-label">Description du produit / service</label>
-                            <textarea class="form-input" id="info-produit" placeholder="Ex: Nous vendons des sneakers éco-responsables fabriquées en France..." rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Argument unique de vente (USP)</label>
-                            <input class="form-input" id="info-usp" placeholder="Ex: Les seules sneakers 100% recyclées et fabriquées en France">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ton souhaité</label>
-                            <input class="form-input" id="info-ton" placeholder="Ex: Cool et décalé, Premium, Direct et punchy...">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Promo en cours</label>
-                            <input class="form-input" id="info-promo" placeholder="Ex: -30% avec le code SUMMER, Livraison offerte...">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Notes complémentaires</label>
-                            <textarea class="form-input" id="info-notes" placeholder="Toute info supplémentaire utile pour la génération..." rows="3"></textarea>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Generate Button -->
@@ -1822,6 +1760,54 @@
                     </svg>
                     Generer mes ads
                 </button>
+
+                <!-- Affiner (optionnel, collapse) -->
+                <div style="margin-top: 24px;">
+                    <div class="form-card-title clickable" onclick="toggleAdvanced()">
+                        <span>⚙️</span> Affiner les resultats <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">(optionnel)</span> <span class="arrow" id="advanced-arrow">▸</span>
+                    </div>
+                    <div id="advanced-section">
+                        <div class="form-group">
+                            <label class="form-label">Type de produit</label>
+                            <div class="select-grid" id="product-type">
+                                <div class="select-option" data-value="ecommerce" onclick="selectOption(this)">🛍️ E-commerce</div>
+                                <div class="select-option" data-value="saas" onclick="selectOption(this)">💻 SaaS</div>
+                                <div class="select-option" data-value="service" onclick="selectOption(this)">🤝 Service</div>
+                                <div class="select-option" data-value="formation" onclick="selectOption(this)">🎓 Formation</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Objectif principal</label>
+                            <div class="select-grid" id="objective">
+                                <div class="select-option" data-value="acquisition" onclick="selectOption(this)">🎯 Acquisition</div>
+                                <div class="select-option" data-value="retargeting" onclick="selectOption(this)">🔄 Retargeting</div>
+                                <div class="select-option" data-value="notoriete" onclick="selectOption(this)">📢 Notoriete</div>
+                                <div class="select-option" data-value="lancement" onclick="selectOption(this)">🚀 Lancement</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Budget mensuel ads</label>
+                            <div class="select-grid" id="budget">
+                                <div class="select-option" data-value="inf1k" onclick="selectOption(this)">&lt; 1 000 &euro;</div>
+                                <div class="select-option" data-value="1-5k" onclick="selectOption(this)">1 - 5 000 &euro;</div>
+                                <div class="select-option" data-value="5-15k" onclick="selectOption(this)">5 - 15 000 &euro;</div>
+                                <div class="select-option" data-value="sup15k" onclick="selectOption(this)">&gt; 15 000 &euro;</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description du produit / service</label>
+                            <textarea class="form-input" id="info-produit" placeholder="Ex: Nous vendons des sneakers eco-responsables fabriquees en France..." rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ton souhaite</label>
+                            <input class="form-input" id="info-ton" placeholder="Ex: Cool et decale, Premium, Direct et punchy...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Promo en cours</label>
+                            <input class="form-input" id="info-promo" placeholder="Ex: -30% avec le code SUMMER, Livraison offerte...">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -2176,15 +2162,13 @@
         function getUserInfo() {
             return {
                 produit: (document.getElementById('info-produit')?.value || '').trim(),
-                usp: (document.getElementById('info-usp')?.value || '').trim(),
                 ton: (document.getElementById('info-ton')?.value || '').trim(),
-                promo: (document.getElementById('info-promo')?.value || '').trim(),
-                notes: (document.getElementById('info-notes')?.value || '').trim()
+                promo: (document.getElementById('info-promo')?.value || '').trim()
             };
         }
 
         function hasUserInfo(info) {
-            return info.produit || info.usp || info.ton || info.promo || info.notes;
+            return info.produit || info.ton || info.promo;
         }
 
         // ==========================================
@@ -2626,20 +2610,17 @@
         // MAIN: START GENERATION
         // ==========================================
         async function startGeneration() {
-            // Validate inputs
+            // Validate URL (seul champ obligatoire)
             const urlInput = document.getElementById('brand-url').value.trim();
             if (!urlInput) {
                 toast('Entrez l\'URL de votre marque');
                 return;
             }
 
-            const productType = getSelectedValue('product-type');
-            const objective = getSelectedValue('objective');
-            const budget = getSelectedValue('budget');
-
-            if (!productType) { toast('Selectionnez un type de produit'); return; }
-            if (!objective) { toast('Selectionnez un objectif'); return; }
-            if (!budget) { toast('Selectionnez un budget'); return; }
+            // Champs optionnels — null si non renseignes
+            const productType = getSelectedValue('product-type') || null;
+            const objective = getSelectedValue('objective') || null;
+            const budget = getSelectedValue('budget') || null;
 
             // Check quota
             if (!canAnalyze()) {
@@ -2811,10 +2792,8 @@ IMPORTANT : Base ton analyse sur ces donnees REELLES. Ne devine pas, utilise les
             if (userInfo && hasUserInfo(userInfo)) {
                 const parts = [];
                 if (userInfo.produit) parts.push(`- Produit/Service : ${userInfo.produit}`);
-                if (userInfo.usp) parts.push(`- Argument unique de vente (USP) : ${userInfo.usp}`);
                 if (userInfo.ton) parts.push(`- Ton souhaite : ${userInfo.ton}`);
                 if (userInfo.promo) parts.push(`- Promo en cours : ${userInfo.promo}`);
-                if (userInfo.notes) parts.push(`- Notes complementaires : ${userInfo.notes}`);
                 userInfoSection = `
 
 INFORMATIONS FOURNIES PAR L'ANNONCEUR (prioritaires sur ce que tu deduis du site) :
@@ -2833,12 +2812,12 @@ Tu es un expert senior en publicite Meta Ads et Google Ads avec 10+ ans d'experi
 CONTEXTE :
 - Marque : ${brandName}
 - URL : ${brandUrl}
-- Type : ${productLabels[productType] || productType}
-- Objectif : ${objectiveLabels[objective] || objective}
-- Budget : ${budgetLabels[budget] || budget}
+${productType ? `- Type : ${productLabels[productType] || productType}` : '- Type : A deduire de ton analyse du site'}
+${objective ? `- Objectif : ${objectiveLabels[objective] || objective}` : '- Objectif : A deduire (par defaut : acquisition)'}
+${budget ? `- Budget : ${budgetLabels[budget] || budget}` : '- Budget : Non precise (propose une strategie adaptable)'}
 ${brandDataSection}${userInfoSection}
 
-Analyse en profondeur cette marque. Identifie precisement : ce qu'elle vend, a qui, comment elle se positionne, quel est son ton, ses couleurs, son univers visuel. Sois SPECIFIQUE et PRECIS, pas generique.
+Analyse en profondeur cette marque. Identifie precisement : ce qu'elle vend, a qui, comment elle se positionne, quel est son ton, ses couleurs, son univers visuel. Sois SPECIFIQUE et PRECIS, pas generique. Si des informations ne sont pas fournies (type, objectif, budget), deduis-les intelligemment de ton analyse.
 
 GENERE EXACTEMENT ce JSON (et RIEN d'autre, pas de texte avant ou apres) :
 
