@@ -1599,6 +1599,56 @@
         }
 
         /* ============================================
+           ADVANCED SECTION (Personnaliser)
+        ============================================ */
+        .form-card-title.clickable {
+            cursor: pointer;
+            user-select: none;
+            transition: color var(--transition);
+        }
+
+        .form-card-title.clickable:hover {
+            color: var(--orange-light);
+        }
+
+        .form-card-title.clickable .arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .form-card-title.clickable .arrow.open {
+            transform: rotate(90deg);
+        }
+
+        #advanced-section {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+            margin-top: 0;
+        }
+
+        #advanced-section.open {
+            max-height: 600px;
+            opacity: 1;
+            margin-top: 20px;
+        }
+
+        #advanced-section .form-group {
+            margin-bottom: 16px;
+        }
+
+        #advanced-section .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        #advanced-section textarea.form-input {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* ============================================
            RESPONSIVE
         ============================================ */
         @media (max-width: 768px) {
@@ -1733,6 +1783,35 @@
                         <div class="select-option" data-value="1-5k" onclick="selectOption(this)">1 - 5 000 &euro;</div>
                         <div class="select-option" data-value="5-15k" onclick="selectOption(this)">5 - 15 000 &euro;</div>
                         <div class="select-option" data-value="sup15k" onclick="selectOption(this)">&gt; 15 000 &euro;</div>
+                    </div>
+                </div>
+
+                <!-- Personnaliser (optionnel) -->
+                <div style="margin-top: 28px;">
+                    <div class="form-card-title clickable" onclick="toggleAdvanced()">
+                        <span>⚙️</span> Personnaliser <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">(optionnel)</span> <span class="arrow" id="advanced-arrow">▸</span>
+                    </div>
+                    <div id="advanced-section">
+                        <div class="form-group">
+                            <label class="form-label">Description du produit / service</label>
+                            <textarea class="form-input" id="info-produit" placeholder="Ex: Nous vendons des sneakers éco-responsables fabriquées en France..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Argument unique de vente (USP)</label>
+                            <input class="form-input" id="info-usp" placeholder="Ex: Les seules sneakers 100% recyclées et fabriquées en France">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ton souhaité</label>
+                            <input class="form-input" id="info-ton" placeholder="Ex: Cool et décalé, Premium, Direct et punchy...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Promo en cours</label>
+                            <input class="form-input" id="info-promo" placeholder="Ex: -30% avec le code SUMMER, Livraison offerte...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notes complémentaires</label>
+                            <textarea class="form-input" id="info-notes" placeholder="Toute info supplémentaire utile pour la génération..." rows="3"></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -1985,6 +2064,28 @@
             isPro: 'megaads_pro'
         };
 
+        // Templates d'inspiration — ajoute/retire des URLs ici quand tu changes tes templates
+        const TEMPLATE_URLS = [
+            '/templates/Frame 1410104033.png',
+            '/templates/Frame 1410104035.png',
+            '/templates/Group 1410103963.png',
+            '/templates/Group 1410103973.png',
+            '/templates/Group 1410104216.png',
+            '/templates/Group 1410104243.png',
+            '/templates/Group 1410104258.png',
+            '/templates/Group 1410104298.png',
+            '/templates/Group 1410104654.png',
+            '/templates/Group 75.png',
+            '/templates/Group 78.png',
+            '/templates/image 2702.png',
+            '/templates/image 2703.png',
+            '/templates/image 2713.png',
+            '/templates/image 3032.png',
+            '/templates/image 3083.png',
+            '/templates/image 3084.png',
+            '/templates/image 3085.png',
+        ];
+
         // ==========================================
         // STATE
         // ==========================================
@@ -2060,6 +2161,94 @@
                 url = 'https://' + url;
             }
             return url;
+        }
+
+        // ==========================================
+        // PERSONNALISER (TOGGLE + USER INFO)
+        // ==========================================
+        function toggleAdvanced() {
+            const section = document.getElementById('advanced-section');
+            const arrow = document.getElementById('advanced-arrow');
+            section.classList.toggle('open');
+            arrow.classList.toggle('open');
+        }
+
+        function getUserInfo() {
+            return {
+                produit: (document.getElementById('info-produit')?.value || '').trim(),
+                usp: (document.getElementById('info-usp')?.value || '').trim(),
+                ton: (document.getElementById('info-ton')?.value || '').trim(),
+                promo: (document.getElementById('info-promo')?.value || '').trim(),
+                notes: (document.getElementById('info-notes')?.value || '').trim()
+            };
+        }
+
+        function hasUserInfo(info) {
+            return info.produit || info.usp || info.ton || info.promo || info.notes;
+        }
+
+        // ==========================================
+        // TEMPLATE COLLAGE
+        // ==========================================
+        async function createTemplateCollage() {
+            try {
+                // Filter only templates that exist (load test)
+                const loadPromises = TEMPLATE_URLS.map(url => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = url;
+                    });
+                });
+
+                const images = (await Promise.all(loadPromises)).filter(Boolean);
+                if (images.length === 0) return null;
+
+                // Grid layout: 2 columns
+                const cols = 2;
+                const rows = Math.ceil(images.length / cols);
+                const cellSize = 800;
+                const canvasW = cols * cellSize;
+                const canvasH = rows * cellSize;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+                const ctx = canvas.getContext('2d');
+
+                // Fill black background
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvasW, canvasH);
+
+                images.forEach((img, i) => {
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    const dx = col * cellSize;
+                    const dy = row * cellSize;
+
+                    // Cover fit: fill cell while maintaining aspect ratio
+                    const imgRatio = img.naturalWidth / img.naturalHeight;
+                    const cellRatio = cellSize / cellSize; // = 1
+
+                    let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+                    if (imgRatio > cellRatio) {
+                        sw = img.naturalHeight * cellRatio;
+                        sx = (img.naturalWidth - sw) / 2;
+                    } else {
+                        sh = img.naturalWidth / cellRatio;
+                        sy = (img.naturalHeight - sh) / 2;
+                    }
+
+                    ctx.drawImage(img, sx, sy, sw, sh, dx, dy, cellSize, cellSize);
+                });
+
+                return canvas.toDataURL('image/png').split(',')[1];
+            } catch (e) {
+                console.warn('Template collage error:', e);
+                return null;
+            }
         }
 
         // ==========================================
@@ -2459,6 +2648,9 @@
             const brandUrl = normalizeUrl(urlInput);
             const brandName = extractBrandName(brandUrl);
 
+            // Read user-provided info
+            const userInfo = getUserInfo();
+
             // Disable button
             const btn = document.getElementById('btn-generate');
             btn.disabled = true;
@@ -2468,18 +2660,19 @@
             startLoadingAnimation(brandName, brandUrl);
 
             try {
-                // === STEP 1 : Scrape brand data via microlink.io ===
-                const [brandData, screenshot] = await Promise.all([
+                // === STEP 1 : Scrape brand data + screenshot + template collage en parallele ===
+                const [brandData, screenshot, templateCollage] = await Promise.all([
                     fetchBrandData(brandUrl),
-                    fetchScreenshot(brandUrl)
+                    fetchScreenshot(brandUrl),
+                    createTemplateCollage()
                 ]);
 
                 const hasScreenshot = !!screenshot;
                 const imageForClaude = screenshot || PLACEHOLDER_IMG;
-                const mediaType = hasScreenshot ? 'image/png' : 'image/png';
+                const mediaType = 'image/png';
 
                 // === STEP 2 : APPEL CLAUDE #1 : Analyse + Brief + Hooks + Strategie ===
-                const prompt1 = buildPrompt1(brandUrl, brandName, productType, objective, budget, brandData, hasScreenshot);
+                const prompt1 = buildPrompt1(brandUrl, brandName, productType, objective, budget, brandData, hasScreenshot, userInfo);
 
                 const response1 = await fetch(CLAUDE_WORKER_URL, {
                     method: 'POST',
@@ -2499,13 +2692,16 @@
 
                 // === STEP 3 : APPEL CLAUDE #2 : Specifications visuelles ===
                 const bestHooks = extractBestHooks(json1.hooks);
-                const prompt2 = buildPrompt2(json1.analyse, bestHooks, brandName, brandData);
+                const prompt2 = buildPrompt2(json1.analyse, bestHooks, brandName, brandData, templateCollage);
+
+                // Send template collage as image if available, otherwise placeholder
+                const imageForClaude2 = templateCollage || PLACEHOLDER_IMG;
 
                 const response2 = await fetch(CLAUDE_WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        image: PLACEHOLDER_IMG,
+                        image: imageForClaude2,
                         mediaType: 'image/png',
                         prompt: prompt2
                     })
@@ -2565,7 +2761,7 @@
         // ==========================================
         // PROMPTS
         // ==========================================
-        function buildPrompt1(brandUrl, brandName, productType, objective, budget, brandData, hasScreenshot) {
+        function buildPrompt1(brandUrl, brandName, productType, objective, budget, brandData, hasScreenshot, userInfo) {
             const productLabels = { ecommerce: 'E-commerce physique', saas: 'SaaS / Logiciel', service: 'Service / Prestation', formation: 'Formation / Info-produit' };
             const objectiveLabels = { acquisition: 'Acquisition de nouveaux clients', retargeting: 'Retargeting / Relance', notoriete: 'Notoriete de marque', lancement: 'Lancement de produit' };
             const budgetLabels = { 'inf1k': 'Moins de 1 000 euros/mois', '1-5k': '1 000 - 5 000 euros/mois', '5-15k': '5 000 - 15 000 euros/mois', 'sup15k': 'Plus de 15 000 euros/mois' };
@@ -2587,6 +2783,22 @@ DONNEES REELLES DU SITE (extraites automatiquement, fiables) :
 IMPORTANT : Base ton analyse sur ces donnees REELLES. Ne devine pas, utilise les informations ci-dessus comme source de verite. Si tu connais cette marque, enrichis avec tes connaissances.`;
             }
 
+            // Build user-provided info section
+            let userInfoSection = '';
+            if (userInfo && hasUserInfo(userInfo)) {
+                const parts = [];
+                if (userInfo.produit) parts.push(`- Produit/Service : ${userInfo.produit}`);
+                if (userInfo.usp) parts.push(`- Argument unique de vente (USP) : ${userInfo.usp}`);
+                if (userInfo.ton) parts.push(`- Ton souhaite : ${userInfo.ton}`);
+                if (userInfo.promo) parts.push(`- Promo en cours : ${userInfo.promo}`);
+                if (userInfo.notes) parts.push(`- Notes complementaires : ${userInfo.notes}`);
+                userInfoSection = `
+
+INFORMATIONS FOURNIES PAR L'ANNONCEUR (prioritaires sur ce que tu deduis du site) :
+${parts.join('\n')}
+Ces informations viennent directement de l'annonceur. Utilise-les en priorite pour ton analyse, tes hooks et ta strategie.`;
+            }
+
             const screenshotInstruction = hasScreenshot
                 ? `L'IMAGE JOINTE est un screenshot reel du site web de la marque. Analyse-le en detail : design, couleurs, typographie, produits visibles, positionnement, ton visuel. Utilise ces observations visuelles dans ton analyse.`
                 : `IGNORE L'IMAGE (c'est un placeholder technique). Base-toi uniquement sur l'URL et les donnees fournies.`;
@@ -2601,7 +2813,7 @@ CONTEXTE :
 - Type : ${productLabels[productType] || productType}
 - Objectif : ${objectiveLabels[objective] || objective}
 - Budget : ${budgetLabels[budget] || budget}
-${brandDataSection}
+${brandDataSection}${userInfoSection}
 
 Analyse en profondeur cette marque. Identifie precisement : ce qu'elle vend, a qui, comment elle se positionne, quel est son ton, ses couleurs, son univers visuel. Sois SPECIFIQUE et PRECIS, pas generique.
 
@@ -2693,7 +2905,7 @@ REGLES POUR LA STRATEGIE :
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans texte explicatif.`;
         }
 
-        function buildPrompt2(analyse, bestHooks, brandName, brandData) {
+        function buildPrompt2(analyse, bestHooks, brandName, brandData, templateCollage) {
             const colors = analyse?.couleurs || ['#e8854a', '#1a0f0a', '#fdf8f5', '#2d1810'];
             const hookTexts = bestHooks.map((h, i) => `Hook ${i+1} (${h.categorie}): "${h.texte}"`).join('\n');
 
@@ -2706,7 +2918,15 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                 ? `\nIMAGES DISPONIBLES DE LA MARQUE (URLs reelles, utilisables dans les visuels) :\n${productImages.map((url, i) => `- Image ${i+1}: ${url}`).join('\n')}\n\nTu DOIS utiliser ces images dans tes visuels. Integre-les comme elements "image" dans le JSON. Ce sont de vraies images du site de la marque (produits, lifestyle, hero images).`
                 : '';
 
-            return `IGNORE L'IMAGE (c'est un placeholder technique). Tu es un directeur artistique senior avec 15 ans d'experience en publicites digitales performantes (Meta Ads, Google Ads). Tu crees des ads qui CONVERTISSENT.
+            // Template instructions — if collage is available, Claude receives it as the image
+            const templateInstruction = templateCollage
+                ? `L'IMAGE JOINTE est un collage de templates publicitaires de reference (grille 2x2).
+Analyse chaque template en detail : structure, composition, typographie, placement des elements, style graphique, utilisation de l'espace.
+Tu DOIS reproduire ces structures et styles dans tes 4 visuels. Chaque visuel doit s'inspirer directement du layout et du style d'un des templates.
+Adapte les couleurs et le contenu a la marque analysee, mais GARDE les layouts, les proportions et le style graphique des templates.`
+                : `IGNORE L'IMAGE (c'est un placeholder technique).`;
+
+            return `${templateInstruction} Tu es un directeur artistique senior avec 15 ans d'experience en publicites digitales performantes (Meta Ads, Google Ads). Tu crees des ads qui CONVERTISSENT.
 
 CONTEXTE :
 - Marque : ${brandName}
@@ -2770,7 +2990,7 @@ REGLES DE DESIGN STRICTES :
 1. Chaque visuel DOIT utiliser un des 4 hooks fournis comme texte principal
 2. Utilise les couleurs de la marque (${colors.join(', ')}) comme base
 3. ${productImages.length > 0 ? 'OBLIGATOIRE : Integre les images produit de la marque. Au moins 3 visuels sur 4 doivent contenir une image produit en hero (grande, dominante). Utilise les URLs fournies ci-dessus.' : 'Utilise des fonds gradients qui evoquent l\'univers visuel de la marque.'}
-4. 4 styles differents et complementaires :
+4. ${templateCollage ? 'INSPIRE-TOI DIRECTEMENT des 4 templates de reference dans l\'image jointe. Reproduis leurs layouts et styles, adaptes aux couleurs et contenu de cette marque.' : '4 styles differents et complementaires :'}
    - Visuel 1 : Image produit plein cadre + texte en overlay avec fond semi-transparent
    - Visuel 2 : Split layout (image a gauche/droite, texte de l'autre cote)
    - Visuel 3 : Image produit en fond avec gradient overlay + hook en gros
