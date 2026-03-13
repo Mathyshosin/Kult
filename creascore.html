@@ -2949,116 +2949,33 @@ Tu DOIS reproduire ces structures et styles dans tes 4 visuels. Chaque visuel do
 Adapte les couleurs et le contenu a la marque analysee, mais GARDE les layouts, les proportions et le style graphique des templates.`
                 : `IGNORE L'IMAGE (c'est un placeholder technique).`;
 
-            return `${templateInstruction} Tu es un directeur artistique senior specialise Meta Ads / Instagram Ads. Tu crees des pubs statiques qui ressemblent a de VRAIES publicites professionnelles, pas des slides PowerPoint.
+            return `${templateInstruction} Tu es un directeur artistique senior Meta Ads. Cree 4 pubs pro, pas des slides PowerPoint.
 
-CONTEXTE :
-- Marque : ${brandName}
-- Secteur : ${analyse?.secteur || 'Non defini'}
-- Ton : ${analyse?.ton || 'Professionnel'}
-- Couleurs de marque : ${colors.join(', ')}
-- Positionnement : ${analyse?.positionnement || ''}
-
-HOOKS A UTILISER :
-${hookTexts}
+MARQUE : ${brandName} | ${analyse?.secteur || ''} | Couleurs : ${colors.join(', ')}
+HOOKS : ${hookTexts}
 ${imageSection}
 
-Genere EXACTEMENT ce JSON (et RIEN d'autre) avec 4 visuels publicitaires.
-Canvas 1080x1080px. Elements positionnes en absolute.
+JSON avec 4 visuels (1080x1080px, elements en absolute). SOIS CONCIS dans le JSON : n'inclus que les proprietes necessaires, omets celles par defaut.
 
-=== TYPES D'ELEMENTS ET PROPRIETES CSS DISPONIBLES ===
+ELEMENTS DISPONIBLES :
+- "text": x, y, width, fontSize, fontWeight, color, textAlign, lineHeight, content, editable, textShadow, letterSpacing, textTransform
+- "image": src, x, y, width, height, objectFit, borderRadius, filter, opacity
+- "shape": x, y, width, height, background (supporte les gradients CSS), borderRadius, boxShadow, opacity, children (array de text)
 
-Chaque element supporte ces proprietes optionnelles en plus de ses proprietes de base :
-- "opacity": 0 a 1
-- "boxShadow": valeur CSS (ex: "0 8px 32px rgba(0,0,0,0.4)")
-- "filter": valeur CSS (ex: "brightness(0.7)", "blur(3px)")
-- "transform": valeur CSS (ex: "rotate(-3deg)", "scale(1.05)")
-- "border": valeur CSS (ex: "2px solid rgba(255,255,255,0.2)")
-- "zIndex": nombre pour l'ordre de superposition
+FORMAT : {"visuels":[{"id":1,"nom":"...","background":{"type":"solid","value":"#000"},"elements":[...]}]}
 
-1. "text" — Texte style
-{
-  "type": "text",
-  "content": "Texte a afficher",
-  "x": 80, "y": 500, "width": 920,
-  "fontSize": 56, "fontWeight": "800",
-  "color": "#ffffff", "textAlign": "left",
-  "lineHeight": 1.15, "editable": true,
-  "textShadow": "0 2px 20px rgba(0,0,0,0.6)",
-  "letterSpacing": "0.5px",
-  "textTransform": "uppercase"
-}
+STRUCTURE DE CHAQUE VISUEL (4 couches) :
+1. Image fond plein cadre (filter "brightness(0.75)") ${productImages.length > 0 ? '— utilise les images de la marque' : '— ou gradient riche'}
+2. Shape overlay gradient (ex: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)")
+3. Textes avec textShadow : marque en haut (petit, uppercase, letterSpacing "2px"), hook (fontSize 48-64, bold), sous-texte
+4. CTA bouton (shape avec boxShadow, border-radius 28+)
 
-2. "image" — Image (produit, lifestyle, fond)
-{
-  "type": "image",
-  "src": "URL_IMAGE",
-  "x": 0, "y": 0, "width": 1080, "height": 1080,
-  "objectFit": "cover", "borderRadius": 0,
-  "filter": "brightness(0.8)"
-}
+${templateCollage ? 'REPRODUIS les layouts des 4 templates dans l\'image (haut-gauche=visuel1, haut-droite=visuel2, bas-gauche=visuel3, bas-droite=visuel4). Adapte couleurs/contenu a la marque.' : 'Styles: V1=hero image+overlay, V2=split image/texte, V3=image sombre+hook gros, V4=fond couleur+image laterale'}
 
-3. "shape" — Forme (overlays, boutons, badges, separateurs)
-{
-  "type": "shape",
-  "x": 0, "y": 680, "width": 1080, "height": 400,
-  "background": "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
-  "borderRadius": 0,
-  "children": [{"type": "text", "content": "CTA", "fontSize": 18, "fontWeight": "700", "color": "#fff", "letterSpacing": "1px", "textTransform": "uppercase"}]
-}
+OBLIGATOIRE : textShadow sur tout texte au-dessus d'image. Overlays en gradient, JAMAIS rectangles opaques plats.
+INTERDIT : elements hors canvas, layout grille, fond gradient seul si images dispo.
 
-FORMAT :
-{
-  "visuels": [
-    {
-      "id": 1,
-      "nom": "Nom du visuel",
-      "style": "Description du style",
-      "background": {"type": "solid", "value": "#000000"},
-      "elements": [...]
-    }
-  ]
-}
-
-=== REGLES DE DESIGN OBLIGATOIRES ===
-
-COMPOSITION EN COUCHES (du fond vers l'avant) :
-1. COUCHE 1 - Fond : ${productImages.length > 0 ? 'Image produit/lifestyle plein cadre (1080x1080, objectFit cover). OBLIGATOIRE sur au moins 3 visuels sur 4.' : 'Gradient riche aux couleurs de la marque.'}
-2. COUCHE 2 - Overlay gradient : shape avec background "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)" pour assombrir le bas. JAMAIS un rectangle opaque plat.
-3. COUCHE 3 - Texte : hook + sous-texte + marque, TOUJOURS avec textShadow pour lisibilite
-4. COUCHE 4 - CTA : bouton shape avec boxShadow et border-radius
-
-HIERARCHIE TYPOGRAPHIQUE STRICTE :
-- Nom de marque : fontSize 16-20, fontWeight 600, textTransform "uppercase", letterSpacing "2px", position en haut
-- Hook principal : fontSize 48-64, fontWeight 800, textShadow obligatoire, max 2-3 lignes
-- Sous-texte : fontSize 18-24, fontWeight 400, couleur plus claire ou opacity 0.85
-- CTA : fontSize 16-20, fontWeight 700, textTransform "uppercase", letterSpacing "1px"
-
-PROFONDEUR ET EFFETS :
-- Boutons CTA : boxShadow "0 4px 20px rgba(0,0,0,0.3)" + border-radius 28+
-- Texte sur image : textShadow "0 2px 16px rgba(0,0,0,0.5)" TOUJOURS
-- Images de fond : filter "brightness(0.75)" ou "brightness(0.8)" pour que le texte ressorte
-- Badges/labels : boxShadow "0 2px 12px rgba(0,0,0,0.3)"
-
-${templateCollage ? `TEMPLATES DE REFERENCE :
-L'image jointe montre 4 templates de reference. REPRODUIS EXACTEMENT leurs layouts :
-- Template haut-gauche → structure de ton visuel 1
-- Template haut-droite → structure de ton visuel 2
-- Template bas-gauche → structure de ton visuel 3
-- Template bas-droite → structure de ton visuel 4
-Adapte couleurs et contenu a la marque, mais garde les proportions et placements des templates.` : `4 STYLES DIFFERENTS :
-- Visuel 1 : Hero image plein cadre + gradient overlay bas + texte en overlay
-- Visuel 2 : Image recadree en haut + zone texte en bas avec fond couleur marque
-- Visuel 3 : Image sombre (filter brightness) + hook en tres gros centré
-- Visuel 4 : Fond couleur marque + image produit decoupee + texte lateral`}
-
-INTERDIT :
-- Fond gradient seul sans image (sauf visuel 4 si pas d'images dispo)
-- Texte sans textShadow au-dessus d'une image
-- Rectangle opaque plat comme overlay (utilise TOUJOURS un gradient)
-- Elements qui debordent du canvas (x + width <= 1080, y + height estimee <= 1080)
-- Layout en grille / PowerPoint — les elements doivent se superposer comme dans une vraie pub
-
-IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans texte explicatif.`;
+Retourne UNIQUEMENT le JSON brut.`;
         }
 
         function extractBestHooks(hooks) {
