@@ -2949,45 +2949,34 @@ Tu DOIS reproduire ces structures et styles dans tes 4 visuels. Chaque visuel do
 Adapte les couleurs et le contenu a la marque analysee, mais GARDE les layouts, les proportions et le style graphique des templates.`
                 : `IGNORE L'IMAGE (c'est un placeholder technique).`;
 
-            return `${templateInstruction} Tu es un directeur artistique senior Meta Ads. Cree 4 pubs pro, pas des slides PowerPoint.
+            return `${templateInstruction} Directeur artistique Meta Ads. Cree 3 pubs pro.
 
-MARQUE : ${brandName} | ${analyse?.secteur || ''} | Couleurs : ${colors.join(', ')}
-HOOKS : ${hookTexts}
+MARQUE: ${brandName} | ${analyse?.secteur || ''} | Couleurs: ${colors.join(', ')}
+HOOKS: ${hookTexts}
 ${imageSection}
 
-JSON avec 4 visuels (1080x1080px, elements en absolute). SOIS CONCIS dans le JSON : n'inclus que les proprietes necessaires, omets celles par defaut.
+GENERE un JSON avec EXACTEMENT 3 visuels. Canvas 1080x1080. MAX 5 elements par visuel. SOIS MINIMALISTE dans le JSON.
 
-ELEMENTS DISPONIBLES :
-- "text": x, y, width, fontSize, fontWeight, color, textAlign, lineHeight, content, editable, textShadow, letterSpacing, textTransform
-- "image": src, x, y, width, height, objectFit, borderRadius, filter, opacity
-- "shape": x, y, width, height, background (supporte les gradients CSS), borderRadius, boxShadow, opacity, children (array de text)
+ELEMENTS: "text" (x,y,width,fontSize,fontWeight,color,content,textShadow), "image" (src,x,y,width,height,objectFit,filter), "shape" (x,y,width,height,background,borderRadius,boxShadow,children)
 
-FORMAT : {"visuels":[{"id":1,"nom":"...","background":{"type":"solid","value":"#000"},"elements":[...]}]}
+FORMAT: {"visuels":[{"id":1,"nom":"...","background":{"type":"solid","value":"#000"},"elements":[...]}]}
 
-STRUCTURE DE CHAQUE VISUEL (4 couches) :
-1. Image fond plein cadre (filter "brightness(0.75)") ${productImages.length > 0 ? '— utilise les images de la marque' : '— ou gradient riche'}
-2. Shape overlay gradient (ex: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)")
-3. Textes avec textShadow : marque en haut (petit, uppercase, letterSpacing "2px"), hook (fontSize 48-64, bold), sous-texte
-4. CTA bouton (shape avec boxShadow, border-radius 28+)
+CHAQUE VISUEL = ${productImages.length > 0 ? 'image fond plein cadre (filter:"brightness(0.75)")' : 'gradient riche'} + shape overlay gradient + texte hook (gros, textShadow) + CTA bouton.
+${templateCollage ? 'Inspire-toi des templates dans l\'image.' : 'V1=hero+overlay, V2=split, V3=image sombre+hook gros'}
 
-${templateCollage ? 'REPRODUIS les layouts des 4 templates dans l\'image (haut-gauche=visuel1, haut-droite=visuel2, bas-gauche=visuel3, bas-droite=visuel4). Adapte couleurs/contenu a la marque.' : 'Styles: V1=hero image+overlay, V2=split image/texte, V3=image sombre+hook gros, V4=fond couleur+image laterale'}
-
-OBLIGATOIRE : textShadow sur tout texte au-dessus d'image. Overlays en gradient, JAMAIS rectangles opaques plats.
-INTERDIT : elements hors canvas, layout grille, fond gradient seul si images dispo.
-
-Retourne UNIQUEMENT le JSON brut.`;
+Retourne UNIQUEMENT le JSON.`;
         }
 
         function extractBestHooks(hooks) {
             if (!hooks || !Array.isArray(hooks)) return [];
-            // Get the 4 highest-scored hooks, preferring different categories
+            // Get the 3 highest-scored hooks, preferring different categories
             const sorted = [...hooks].sort((a, b) => (b.score || 0) - (a.score || 0));
             const selected = [];
             const usedCategories = new Set();
 
             // First pass: one per category (best score)
             for (const hook of sorted) {
-                if (selected.length >= 4) break;
+                if (selected.length >= 3) break;
                 if (!usedCategories.has(hook.categorie)) {
                     selected.push(hook);
                     usedCategories.add(hook.categorie);
@@ -2996,7 +2985,7 @@ Retourne UNIQUEMENT le JSON brut.`;
 
             // Fill remaining slots with best remaining hooks
             for (const hook of sorted) {
-                if (selected.length >= 4) break;
+                if (selected.length >= 3) break;
                 if (!selected.includes(hook)) {
                     selected.push(hook);
                 }
