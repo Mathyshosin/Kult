@@ -2195,7 +2195,7 @@
                 const loadPromises = TEMPLATE_URLS.map(url => {
                     return new Promise((resolve) => {
                         const img = new Image();
-                        img.crossOrigin = 'anonymous';
+                        // Pas de crossOrigin — images same-origin, evite les problemes CORS/tainted canvas
                         img.onload = () => resolve(img);
                         img.onerror = () => resolve(null);
                         img.src = url;
@@ -2687,11 +2687,14 @@
                     })
                 });
 
-                if (!response1.ok) throw new Error('Erreur API (appel 1)');
+                if (!response1.ok) throw new Error('Erreur API (appel 1) : ' + response1.status);
 
                 const data1 = await response1.json();
-                const text1 = data1.content[0].text;
-                const json1 = JSON.parse(text1.match(/\{[\s\S]*\}/)[0]);
+                const text1 = data1?.content?.[0]?.text;
+                if (!text1) throw new Error('Reponse API vide (appel 1)');
+                const match1 = text1.match(/\{[\s\S]*\}/);
+                if (!match1) throw new Error('JSON introuvable dans la reponse (appel 1)');
+                const json1 = JSON.parse(match1[0]);
 
                 // === STEP 3 : APPEL CLAUDE #2 : Specifications visuelles ===
                 const bestHooks = extractBestHooks(json1.hooks);
@@ -2711,11 +2714,27 @@
                     })
                 });
 
-                if (!response2.ok) throw new Error('Erreur API (appel 2)');
+                if (!response2.ok) throw new Error('Erreur API (appel 2) : ' + response2.status);
 
                 const data2 = await response2.json();
-                const text2 = data2.content[0].text;
-                const json2 = JSON.parse(text2.match(/\{[\s\S]*\}/)[0]);
+                const text2 = data2?.content?.[0]?.text;
+                if (!text2) throw new Error('Reponse API vide (appel 2)');
+                const match2 = text2.match(/\{[\s\S]*\}/);
+                if (!match2) throw new Error('JSON introuvable dans la reponse (appel 2)');
+                let json2;
+                try {
+                    json2 = JSON.parse(match2[0]);
+                } catch (parseErr) {
+                    // JSON tronque — tenter de reparer en fermant les accolades/crochets manquants
+                    let fixedJson = match2[0];
+                    const opens = (fixedJson.match(/\[/g) || []).length;
+                    const closes = (fixedJson.match(/\]/g) || []).length;
+                    for (let i = 0; i < opens - closes; i++) fixedJson += ']';
+                    const openBraces = (fixedJson.match(/\{/g) || []).length;
+                    const closeBraces = (fixedJson.match(/\}/g) || []).length;
+                    for (let i = 0; i < openBraces - closeBraces; i++) fixedJson += '}';
+                    json2 = JSON.parse(fixedJson);
+                }
 
                 // Combine results
                 const results = {
@@ -2755,7 +2774,7 @@
 
             } catch (error) {
                 console.error('Generation error:', error);
-                toast('Erreur lors de la generation. Reessayez.');
+                toast('Erreur : ' + (error.message || 'Reessayez.'));
                 showScreen('screen-input');
             } finally {
                 btn.disabled = false;
