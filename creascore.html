@@ -2192,7 +2192,6 @@
         // ==========================================
         async function createTemplateCollage() {
             try {
-                // Filter only templates that exist (load test)
                 const loadPromises = TEMPLATE_URLS.map(url => {
                     return new Promise((resolve) => {
                         const img = new Image();
@@ -2203,13 +2202,20 @@
                     });
                 });
 
-                const images = (await Promise.all(loadPromises)).filter(Boolean);
+                let images = (await Promise.all(loadPromises)).filter(Boolean);
                 if (images.length === 0) return null;
 
-                // Grid layout: 2 columns
+                // Limiter a 4 templates max pour rester sous la limite API (5 Mo)
+                // Selectionne 4 templates aleatoires pour varier les inspirations
+                if (images.length > 4) {
+                    const shuffled = images.sort(() => Math.random() - 0.5);
+                    images = shuffled.slice(0, 4);
+                }
+
+                // Grille 2x2, cellules 400px — JPEG pour taille reduite
                 const cols = 2;
                 const rows = Math.ceil(images.length / cols);
-                const cellSize = 800;
+                const cellSize = 400;
                 const canvasW = cols * cellSize;
                 const canvasH = rows * cellSize;
 
@@ -2218,7 +2224,6 @@
                 canvas.height = canvasH;
                 const ctx = canvas.getContext('2d');
 
-                // Fill black background
                 ctx.fillStyle = '#000';
                 ctx.fillRect(0, 0, canvasW, canvasH);
 
@@ -2228,23 +2233,21 @@
                     const dx = col * cellSize;
                     const dy = row * cellSize;
 
-                    // Cover fit: fill cell while maintaining aspect ratio
+                    // Cover fit
                     const imgRatio = img.naturalWidth / img.naturalHeight;
-                    const cellRatio = cellSize / cellSize; // = 1
-
                     let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-                    if (imgRatio > cellRatio) {
-                        sw = img.naturalHeight * cellRatio;
+                    if (imgRatio > 1) {
+                        sw = img.naturalHeight;
                         sx = (img.naturalWidth - sw) / 2;
                     } else {
-                        sh = img.naturalWidth / cellRatio;
+                        sh = img.naturalWidth;
                         sy = (img.naturalHeight - sh) / 2;
                     }
 
                     ctx.drawImage(img, sx, sy, sw, sh, dx, dy, cellSize, cellSize);
                 });
 
-                return canvas.toDataURL('image/png').split(',')[1];
+                return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
             } catch (e) {
                 console.warn('Template collage error:', e);
                 return null;
@@ -2696,13 +2699,14 @@
 
                 // Send template collage as image if available, otherwise placeholder
                 const imageForClaude2 = templateCollage || PLACEHOLDER_IMG;
+                const mediaType2 = templateCollage ? 'image/jpeg' : 'image/png';
 
                 const response2 = await fetch(CLAUDE_WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         image: imageForClaude2,
-                        mediaType: 'image/png',
+                        mediaType: mediaType2,
                         prompt: prompt2
                     })
                 });
