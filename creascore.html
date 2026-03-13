@@ -2930,7 +2930,7 @@ Tu DOIS reproduire ces structures et styles dans tes 4 visuels. Chaque visuel do
 Adapte les couleurs et le contenu a la marque analysee, mais GARDE les layouts, les proportions et le style graphique des templates.`
                 : `IGNORE L'IMAGE (c'est un placeholder technique).`;
 
-            return `${templateInstruction} Tu es un directeur artistique senior avec 15 ans d'experience en publicites digitales performantes (Meta Ads, Google Ads). Tu crees des ads qui CONVERTISSENT.
+            return `${templateInstruction} Tu es un directeur artistique senior specialise Meta Ads / Instagram Ads. Tu crees des pubs statiques qui ressemblent a de VRAIES publicites professionnelles, pas des slides PowerPoint.
 
 CONTEXTE :
 - Marque : ${brandName}
@@ -2939,72 +2939,105 @@ CONTEXTE :
 - Couleurs de marque : ${colors.join(', ')}
 - Positionnement : ${analyse?.positionnement || ''}
 
-HOOKS A UTILISER POUR LES VISUELS :
+HOOKS A UTILISER :
 ${hookTexts}
 ${imageSection}
 
-Genere EXACTEMENT ce JSON (et RIEN d'autre) avec 4 specifications de visuels publicitaires.
-Chaque visuel fait 1080x1080 pixels. Les elements sont positionnes en absolute dans un conteneur relatif.
+Genere EXACTEMENT ce JSON (et RIEN d'autre) avec 4 visuels publicitaires.
+Canvas 1080x1080px. Elements positionnes en absolute.
 
-TYPES D'ELEMENTS SUPPORTES :
+=== TYPES D'ELEMENTS ET PROPRIETES CSS DISPONIBLES ===
 
-1. "text" : Texte avec position, taille, couleur
+Chaque element supporte ces proprietes optionnelles en plus de ses proprietes de base :
+- "opacity": 0 a 1
+- "boxShadow": valeur CSS (ex: "0 8px 32px rgba(0,0,0,0.4)")
+- "filter": valeur CSS (ex: "brightness(0.7)", "blur(3px)")
+- "transform": valeur CSS (ex: "rotate(-3deg)", "scale(1.05)")
+- "border": valeur CSS (ex: "2px solid rgba(255,255,255,0.2)")
+- "zIndex": nombre pour l'ordre de superposition
+
+1. "text" — Texte style
 {
   "type": "text",
   "content": "Texte a afficher",
-  "x": 80, "y": 120, "width": 920,
-  "fontSize": 64, "fontWeight": "800",
+  "x": 80, "y": 500, "width": 920,
+  "fontSize": 56, "fontWeight": "800",
   "color": "#ffffff", "textAlign": "left",
-  "lineHeight": 1.15, "editable": true
+  "lineHeight": 1.15, "editable": true,
+  "textShadow": "0 2px 20px rgba(0,0,0,0.6)",
+  "letterSpacing": "0.5px",
+  "textTransform": "uppercase"
 }
 
-2. "image" : Image externe (produit, lifestyle)
+2. "image" — Image (produit, lifestyle, fond)
 {
   "type": "image",
-  "src": "URL_COMPLETE_DE_L_IMAGE",
-  "x": 0, "y": 0, "width": 1080, "height": 600,
-  "objectFit": "cover",
-  "borderRadius": 0,
-  "opacity": 1
+  "src": "URL_IMAGE",
+  "x": 0, "y": 0, "width": 1080, "height": 1080,
+  "objectFit": "cover", "borderRadius": 0,
+  "filter": "brightness(0.8)"
 }
 
-3. "shape" : Rectangle colore (boutons, separateurs, overlays)
+3. "shape" — Forme (overlays, boutons, badges, separateurs)
 {
-  "type": "shape", "shape": "rect",
-  "x": 80, "y": 900, "width": 280, "height": 56,
-  "borderRadius": 28, "background": "#e8854a",
-  "opacity": 1,
-  "children": [{"type": "text", "content": "CTA", "fontSize": 18, "fontWeight": "700", "color": "#fff", "textAlign": "center"}]
+  "type": "shape",
+  "x": 0, "y": 680, "width": 1080, "height": 400,
+  "background": "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
+  "borderRadius": 0,
+  "children": [{"type": "text", "content": "CTA", "fontSize": 18, "fontWeight": "700", "color": "#fff", "letterSpacing": "1px", "textTransform": "uppercase"}]
 }
 
-FORMAT DU JSON :
+FORMAT :
 {
   "visuels": [
     {
       "id": 1,
-      "nom": "Nom descriptif du visuel",
+      "nom": "Nom du visuel",
       "style": "Description du style",
-      "background": {"type": "gradient", "value": "linear-gradient(...)"},
+      "background": {"type": "solid", "value": "#000000"},
       "elements": [...]
     }
   ]
 }
 
-REGLES DE DESIGN STRICTES :
-1. Chaque visuel DOIT utiliser un des 4 hooks fournis comme texte principal
-2. Utilise les couleurs de la marque (${colors.join(', ')}) comme base
-3. ${productImages.length > 0 ? 'OBLIGATOIRE : Integre les images produit de la marque. Au moins 3 visuels sur 4 doivent contenir une image produit en hero (grande, dominante). Utilise les URLs fournies ci-dessus.' : 'Utilise des fonds gradients qui evoquent l\'univers visuel de la marque.'}
-4. ${templateCollage ? 'INSPIRE-TOI DIRECTEMENT des 4 templates de reference dans l\'image jointe. Reproduis leurs layouts et styles, adaptes aux couleurs et contenu de cette marque.' : '4 styles differents et complementaires :'}
-   - Visuel 1 : Image produit plein cadre + texte en overlay avec fond semi-transparent
-   - Visuel 2 : Split layout (image a gauche/droite, texte de l'autre cote)
-   - Visuel 3 : Image produit en fond avec gradient overlay + hook en gros
-   - Visuel 4 : Design graphique bold avec couleurs de marque + accents visuels
-5. Le texte principal (hook) doit etre GROS et dominant (fontSize 48-72px)
-6. Inclus toujours : nom de marque (petit, en haut), texte principal (hook), sous-texte, CTA (bouton)
-7. Positions en pixels (canvas 1080x1080), x + width <= 1080, y + hauteur estimee <= 1080
-8. Pour les images avec du texte par-dessus : ajoute un shape semi-transparent comme overlay (ex: rgba(0,0,0,0.5))
-9. Le resultat doit ressembler a une VRAIE publicite Meta/Instagram, pas un slide PowerPoint
-10. Pense "scroll-stopping" : les visuels doivent attirer l'oeil immediatement
+=== REGLES DE DESIGN OBLIGATOIRES ===
+
+COMPOSITION EN COUCHES (du fond vers l'avant) :
+1. COUCHE 1 - Fond : ${productImages.length > 0 ? 'Image produit/lifestyle plein cadre (1080x1080, objectFit cover). OBLIGATOIRE sur au moins 3 visuels sur 4.' : 'Gradient riche aux couleurs de la marque.'}
+2. COUCHE 2 - Overlay gradient : shape avec background "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)" pour assombrir le bas. JAMAIS un rectangle opaque plat.
+3. COUCHE 3 - Texte : hook + sous-texte + marque, TOUJOURS avec textShadow pour lisibilite
+4. COUCHE 4 - CTA : bouton shape avec boxShadow et border-radius
+
+HIERARCHIE TYPOGRAPHIQUE STRICTE :
+- Nom de marque : fontSize 16-20, fontWeight 600, textTransform "uppercase", letterSpacing "2px", position en haut
+- Hook principal : fontSize 48-64, fontWeight 800, textShadow obligatoire, max 2-3 lignes
+- Sous-texte : fontSize 18-24, fontWeight 400, couleur plus claire ou opacity 0.85
+- CTA : fontSize 16-20, fontWeight 700, textTransform "uppercase", letterSpacing "1px"
+
+PROFONDEUR ET EFFETS :
+- Boutons CTA : boxShadow "0 4px 20px rgba(0,0,0,0.3)" + border-radius 28+
+- Texte sur image : textShadow "0 2px 16px rgba(0,0,0,0.5)" TOUJOURS
+- Images de fond : filter "brightness(0.75)" ou "brightness(0.8)" pour que le texte ressorte
+- Badges/labels : boxShadow "0 2px 12px rgba(0,0,0,0.3)"
+
+${templateCollage ? `TEMPLATES DE REFERENCE :
+L'image jointe montre 4 templates de reference. REPRODUIS EXACTEMENT leurs layouts :
+- Template haut-gauche → structure de ton visuel 1
+- Template haut-droite → structure de ton visuel 2
+- Template bas-gauche → structure de ton visuel 3
+- Template bas-droite → structure de ton visuel 4
+Adapte couleurs et contenu a la marque, mais garde les proportions et placements des templates.` : `4 STYLES DIFFERENTS :
+- Visuel 1 : Hero image plein cadre + gradient overlay bas + texte en overlay
+- Visuel 2 : Image recadree en haut + zone texte en bas avec fond couleur marque
+- Visuel 3 : Image sombre (filter brightness) + hook en tres gros centré
+- Visuel 4 : Fond couleur marque + image produit decoupee + texte lateral`}
+
+INTERDIT :
+- Fond gradient seul sans image (sauf visuel 4 si pas d'images dispo)
+- Texte sans textShadow au-dessus d'une image
+- Rectangle opaque plat comme overlay (utilise TOUJOURS un gradient)
+- Elements qui debordent du canvas (x + width <= 1080, y + height estimee <= 1080)
+- Layout en grille / PowerPoint — les elements doivent se superposer comme dans une vraie pub
 
 IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans texte explicatif.`;
         }
@@ -3443,29 +3476,28 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
 
             // Set background
             const bg = spec.background || {};
-            if (bg.type === 'gradient') {
-                container.style.background = bg.value;
-            } else if (bg.type === 'solid') {
-                container.style.background = bg.value;
-            } else {
-                container.style.background = bg.value || '#2a1a12';
-            }
-
+            container.style.background = bg.value || '#2a1a12';
             container.style.position = 'relative';
             container.style.overflow = 'hidden';
             container.innerHTML = '';
 
             const elements = spec.elements || [];
             let containerWidth = container.getBoundingClientRect().width;
-            // Fallback if container not visible yet (hidden tab)
-            if (!containerWidth || containerWidth < 10) {
-                containerWidth = 500; // reasonable default for half of 1100px grid
-            }
+            if (!containerWidth || containerWidth < 10) containerWidth = 500;
             const scale = containerWidth / 1080;
+
+            // Apply common CSS properties that Claude can specify on any element
+            function applyCommonStyles(node, el) {
+                if (el.opacity !== undefined) node.style.opacity = el.opacity;
+                if (el.boxShadow) node.style.boxShadow = el.boxShadow;
+                if (el.filter) node.style.filter = el.filter;
+                if (el.transform) node.style.transform = el.transform;
+                if (el.border) node.style.border = el.border;
+                if (el.zIndex !== undefined) node.style.zIndex = el.zIndex;
+            }
 
             elements.forEach(el => {
                 if (el.type === 'image') {
-                    // Product/brand image element
                     const img = document.createElement('img');
                     img.style.position = 'absolute';
                     img.style.left = (el.x * scale) + 'px';
@@ -3474,13 +3506,10 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                     img.style.height = ((el.height || el.width) * scale) + 'px';
                     img.style.objectFit = el.objectFit || 'cover';
                     img.style.borderRadius = ((el.borderRadius || 0) * scale) + 'px';
-                    if (el.opacity !== undefined && el.opacity < 1) {
-                        img.style.opacity = el.opacity;
-                    }
+                    applyCommonStyles(img, el);
                     img.crossOrigin = 'anonymous';
                     img.src = el.src;
 
-                    // Fallback: if image fails to load, show colored placeholder
                     img.onerror = () => {
                         const fallback = document.createElement('div');
                         fallback.style.position = 'absolute';
@@ -3508,6 +3537,12 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                     div.style.lineHeight = el.lineHeight || 1.3;
                     div.style.fontFamily = 'Plus Jakarta Sans, sans-serif';
                     div.style.wordWrap = 'break-word';
+                    if (el.textShadow) div.style.textShadow = el.textShadow;
+                    if (el.letterSpacing) div.style.letterSpacing = el.letterSpacing;
+                    if (el.textTransform) div.style.textTransform = el.textTransform;
+                    if (el.background) div.style.background = el.background;
+                    if (el.padding) div.style.padding = (typeof el.padding === 'number' ? (el.padding * scale) + 'px' : el.padding);
+                    applyCommonStyles(div, el);
                     div.textContent = el.content || '';
 
                     if (el.editable) {
@@ -3519,11 +3554,12 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                             div.style.borderRadius = '4px';
                         });
                         div.addEventListener('blur', () => {
-                            div.style.boxShadow = 'none';
+                            div.style.boxShadow = el.boxShadow || 'none';
                         });
                     }
 
                     container.appendChild(div);
+
                 } else if (el.type === 'shape') {
                     const div = document.createElement('div');
                     div.style.position = 'absolute';
@@ -3533,12 +3569,10 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                     div.style.height = (el.height * scale) + 'px';
                     div.style.borderRadius = ((el.borderRadius || 0) * scale) + 'px';
                     div.style.background = el.background || 'transparent';
-                    if (el.opacity !== undefined) {
-                        div.style.opacity = el.opacity;
-                    }
                     div.style.display = 'flex';
                     div.style.alignItems = 'center';
                     div.style.justifyContent = 'center';
+                    applyCommonStyles(div, el);
 
                     if (el.children) {
                         el.children.forEach(child => {
@@ -3549,6 +3583,9 @@ IMPORTANT : Retourne UNIQUEMENT le JSON, sans markdown, sans backticks, sans tex
                                 span.style.color = child.color || '#ffffff';
                                 span.style.textAlign = child.textAlign || 'center';
                                 span.style.fontFamily = 'Plus Jakarta Sans, sans-serif';
+                                if (child.textShadow) span.style.textShadow = child.textShadow;
+                                if (child.letterSpacing) span.style.letterSpacing = child.letterSpacing;
+                                if (child.textTransform) span.style.textTransform = child.textTransform;
                                 span.textContent = child.content || '';
 
                                 if (child.editable) {
